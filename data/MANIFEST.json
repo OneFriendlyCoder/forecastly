@@ -1,0 +1,16 @@
+{
+  "maven": {
+    "url": "https://maven-datasets.s3.amazonaws.com/CRM+Sales+Opportunities/CRM+Sales+Opportunities.zip",
+    "file": "crm.zip",
+    "sha256": "f7d1a04f2651dd8c0a2d01d2e9c161438983dde01db47c3d8ba6e774012d01a1",
+    "bytes": 139231,
+    "downloaded": "2026-10-31"
+  },
+  "enron": {
+    "url": "https://www.cs.cmu.edu/~enron/enron_mail_20150507.tar.gz",
+    "file": "enron.tar.gz",
+    "sha256": "b3da1b3fe0369ec3140bb4fbce94702c33b7da810ec15d718b3fadf5cd748ca7",
+    "bytes": 443254787,
+    "downloaded": "2026-10-31"
+  }
+}
