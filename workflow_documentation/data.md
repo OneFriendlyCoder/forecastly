@@ -2,7 +2,15 @@
 
 This document explains what data the project uses, what that data can and can't tell us, the assumptions we made, and what the simulator will add.
 
-Status: data setup is finished and all table checks pass. The simulator is not built yet.
+Status: data setup is finished and all table checks pass. The simulator's generator is built and passes its checks. The Kafka replay tool is not built yet.
+
+## Project priorities
+
+The main aim is to show software engineering and problem solving. The data and model can be imperfect as long as the results are reported honestly.
+
+- The simulator is mainly a test tool for the pipeline. Realism only has to be believable.
+- Model numbers in the project plan are things to report, not targets to tune for.
+- The pitch leads with reliability and throughput, not model accuracy.
 
 ## Summary
 
@@ -174,54 +182,78 @@ It doesn't teach the model anything directly, and its emails never become deal e
 **Added:**
 
 - **People:** 1-6 buyers per deal, such as a champion or a budget holder, plus a skill level and habits for each rep.
-- **Actions:** emails, opens, clicks, replies, calls, meetings, no-shows and new contacts, each dated.
+- **Actions:** emails, replies, meetings, no-shows and new contacts, each dated.
 - **Expected close dates:** a target date for each deal, and any delays to it.
 - **A hidden health score:** rises or falls daily toward the real outcome and drives the activity. Healthy deals get quicker replies and more people involved, while failing ones go quiet and slip.
 - **Deliberate messiness:** about 15% of deals break the usual patterns, so the model can't simply memorise our rules.
 
-### What needs to be built
+### How it is built
 
-1. Settings file: seed, noise level and pattern strengths.
-2. People: buyer contacts for each deal, and rep skill and habits.
-3. Hidden health score: a daily score for each deal.
-4. Event generator: turns health into activity, and handles very short deals sensibly.
-5. Pre-engage activity: made-up first contacts before `engaged_at`.
-6. Expected close dates and delays.
-7. Won and lost patterns, including the deals that break them.
-8. Realistic timing: reply delays and weekdays from Enron.
-9. Open deals: activity for the 1,589 Engaging deals, with no ending.
-10. Output and checks: a batch file, a live stream, and a validation report.
+| Part | Status | File |
+|---|---|---|
+| Shared event contract | Done | `schemas/event.v1.json` |
+| Settings | Done | `ml/simulator/config.yaml` |
+| Generator | Done | `ml/simulator/simulate.py` |
+| Rule checks | Done | `ml/simulator/test_simulate.py` |
+| Kafka replay and fault injection | Not started | `ml/simulator/replay.py` |
 
-### What the final data will look like
+To run it from the repo root:
 
-- **`events.parquet`:** the main output, with one row per action. It will probably have 100,000+ rows, which is a rough guess.
-- **`contacts.parquet`:** the generated buyers for each deal.
-- **`health_paths.parquet`:** the hidden score, kept for debugging and never shown to the model.
-- **`training_snapshots.parquet`:** one row per deal per checkpoint, holding only what was known that day, plus the eventual result. Checkpoints use days since engagement, because "75% through its life" would reveal when the deal ends.
-
-An example timeline for one deal:
-
-```text
-deal_id   occurred_at        event_type      details
-1C1I7A6R  2016-10-12 10:14   email_sent      to champion
-1C1I7A6R  2016-10-13 09:02   email_replied   delay 22.8h, positive
-1C1I7A6R  2016-10-20 00:00   stage_changed   Prospecting -> Engaging (real date)
-1C1I7A6R  2017-02-08 15:30   meeting_held    pricing, economic buyer present
-1C1I7A6R  2017-03-01 00:00   deal_closed     won, 1054 (real result)
+```bash
+python3 ml/simulator/simulate.py              # all deals
+python3 ml/simulator/simulate.py --limit 100  # a small sample
+python3 ml/simulator/test_simulate.py
 ```
 
-The rows marked real and the `deal_closed` row come from the data. The others are made-up examples.
+The generator uses 8 event types: `email_sent`, `email_replied`, `meeting_held`, `meeting_no_show`, `contact_added`, `close_date_changed`, `stage_changed` and `deal_closed`. The same seed always gives the same data, and `event_id` is built from the seed, deal and event number.
 
-### How we'll judge it
+Real dates are kept. `deal_closed` is stamped at 23:59:59 on the real close date, so all activity falls before it.
 
-Win rate and deal length will match the real data automatically, because the simulator copies real dates and outcomes. So the "matches real data within 5%" check proves little. These checks matter more:
+Rates in `config.yaml` are starting guesses, and we don't tune them to improve model scores.
 
-- **Leakage check:** if a model scores near-perfectly on early events only, the patterns are too strong.
-- **Real vs simulated comparison:** report results with real data only, and with simulated activity added.
+### What the first full run produced
+
+Output goes to `data/simulated/` (32 MB, not in Git).
+
+| Measure | Result |
+|---|---|
+| Deals simulated | 8,300 (6,711 finished, 1,589 open) |
+| Events | 439,821, typically 43 per deal |
+| Buyers generated | 27,680 |
+| Emails on weekdays | 96% |
+| Early-signal check | 0.61, where 0.5 is guessing and 1.0 is perfect |
+
+| Average per deal | Won | Lost |
+|---|---|---|
+| Emails sent | 22.7 | 19.5 |
+| Replies | 8.8 | 5.3 |
+| Meetings held | 3.1 | 1.5 |
+| Buyers | 3.2 | 2.3 |
+| Close-date pushes | 1.1 | 0.9 |
+
+The early-signal check uses only activity from the first half of each finished deal.
+
+Close-date pushes go the opposite way from the project plan: won deals get slightly more, because they run longer and pass their expected date more often.
+
+### Replay tool (next)
+
+The replay tool will send events into Kafka, keyed by `deal_id`, and can inject faults: duplicates, late events, broken events, traffic bursts, and a consumer killed mid-run. The key test runs the same events clean and with every fault switched on, and the final state of every deal must be identical.
+
+It needs the Go deal-state service as a consumer before faults can be tested. A `--scale` setting will copy deals to reach load-test volumes.
+
+`training_snapshots` will be built later with the Week 3 feature code, so training and live scoring can share it. It will hold one row per deal per checkpoint, using days since engagement, because "75% through its life" would reveal when the deal ends.
+
+### What we check
+
+- **Rules:** activity stops on the real close date, real dates and outcomes are unchanged, each deal has 1-6 buyers, and every event follows the schema.
+- **Same seed:** two runs give identical data, and a new seed changes it.
+- **Early signal:** must fall between 0.55 and 0.95, which catches both a bug and an obvious leak.
+
+We dropped the "matches real data within 5%" check, statistical tuning against Enron, multi-noise runs and the full validation report.
 
 ## The biggest risk
 
-Most of the activity data is invented by us. If the model does well on it, it may just be rediscovering our own rules. That's why we report both results above, and why the results must say which data is real.
+Most of the activity data is invented by us. If the model does well on it, it may just be rediscovering our own rules. That's why we report results with real data only and with simulated activity added, and why the results must say which data is real.
 
 ## Decisions
 
@@ -230,3 +262,4 @@ Most of the activity data is invented by us. If the model does well on it, it ma
 - **Open deals in the demo:** treat them as active, simulate activity up to 31 December 2017, and say so openly.
 - **Early-warning target:** the plan asks to flag 60% of lost deals 14+ days before close, but about half of lost deals last 14 days or less. We measure only lost deals that last more than 14 days.
 - **Email hours:** use Enron's weekday pattern and assume normal working hours.
+- **Simulator purpose:** it's a test tool for the pipeline, using the simpler plan above.
