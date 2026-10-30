@@ -1,0 +1,55 @@
+name: pipeline-pulse
+
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=1G
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health", "--exit-when-healthy"]
+      interval: 3s
+      timeout: 10s
+      retries: 20
+
+  create-topics:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    # Keyed by deal_id, so 6 partitions allows up to 6 parallel consumers.
+    command:
+      - >-
+        rpk topic list -X brokers=redpanda:9092 | grep -q '^activity.events ' ||
+        rpk topic create activity.events -p 6 -r 1 -X brokers=redpanda:9092
+    restart: "no"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pulse
+      POSTGRES_PASSWORD: pulse  # local demo only
+      POSTGRES_DB: pipeline_pulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulse -d pipeline_pulse"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  redpanda-data:
+  postgres-data:
