@@ -1,0 +1,107 @@
+{
+  "train_rows": 13622,
+  "test_rows": 3466,
+  "test_deals": 1060,
+  "test_won_share": 0.672,
+  "models": {
+    "baseline_all_features": {
+      "auc": 0.653,
+      "auc_by_checkpoint": {
+        "7": 0.5637,
+        "14": 0.5923,
+        "30": 0.661,
+        "60": 0.7755,
+        "90": 0.7529
+      },
+      "calibration": [
+        {
+          "predicted": 0.51,
+          "actual": 0.5
+        },
+        {
+          "predicted": 0.626,
+          "actual": 0.623
+        },
+        {
+          "predicted": 0.686,
+          "actual": 0.649
+        },
+        {
+          "predicted": 0.742,
+          "actual": 0.743
+        },
+        {
+          "predicted": 0.836,
+          "actual": 0.844
+        }
+      ],
+      "train_auc": 0.6452
+    },
+    "lightgbm_real_only": {
+      "auc": 0.5181,
+      "auc_by_checkpoint": {
+        "7": 0.5024,
+        "14": 0.5076,
+        "30": 0.5122,
+        "60": 0.514,
+        "90": 0.5016
+      },
+      "calibration": [
+        {
+          "predicted": 0.647,
+          "actual": 0.65
+        },
+        {
+          "predicted": 0.665,
+          "actual": 0.677
+        },
+        {
+          "predicted": 0.679,
+          "actual": 0.653
+        },
+        {
+          "predicted": 0.696,
+          "actual": 0.67
+        },
+        {
+          "predicted": 0.724,
+          "actual": 0.709
+        }
+      ],
+      "train_auc": 0.5358
+    },
+    "lightgbm_all_features": {
+      "auc": 0.6533,
+      "auc_by_checkpoint": {
+        "7": 0.5715,
+        "14": 0.5953,
+        "30": 0.6543,
+        "60": 0.7599,
+        "90": 0.7625
+      },
+      "calibration": [
+        {
+          "predicted": 0.523,
+          "actual": 0.52
+        },
+        {
+          "predicted": 0.632,
+          "actual": 0.589
+        },
+        {
+          "predicted": 0.682,
+          "actual": 0.677
+        },
+        {
+          "predicted": 0.735,
+          "actual": 0.733
+        },
+        {
+          "predicted": 0.829,
+          "actual": 0.841
+        }
+      ],
+      "train_auc": 0.7167
+    }
+  }
+}

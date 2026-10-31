@@ -1,6 +1,6 @@
 COMPOSE := docker compose -f deploy/docker-compose.yml
 
-.PHONY: up down reset check snapshots test test-e2e test-faults load-test
+.PHONY: up down reset check snapshots train test test-e2e test-faults load-test
 
 up:
 	$(COMPOSE) up -d --wait redpanda postgres
@@ -26,10 +26,14 @@ check:
 snapshots:
 	.venv/bin/python ml/features/build_snapshots.py
 
-test:
+train:
+	.venv/bin/python ml/model/train.py
+
+test: snapshots
 	go test ./...
 	.venv/bin/python ml/simulator/test_simulate.py
 	.venv/bin/python ml/features/test_features.py
+	.venv/bin/python ml/model/test_train.py
 
 test-e2e:  # wipes local Kafka and Postgres data
 	$(MAKE) reset up

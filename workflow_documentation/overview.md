@@ -32,7 +32,7 @@ Maven + Enron data -> simulator -> events.parquet
 | Fault and load testing | Done | [deal_state.md](deal_state.md) |
 | Problems found while building | Ongoing | [postmortem.md](postmortem.md) |
 | Features and training data | Done | [features.md](features.md) |
-| Model | Not started | |
+| Model | Done | [model.md](model.md) |
 | Scoring service | Not started | |
 | API and dashboard | Not started | |
 | Agent over MCP | Not started | |
