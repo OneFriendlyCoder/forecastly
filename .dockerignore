@@ -1,0 +1,6 @@
+data/
+ml/
+.venv/
+.git/
+workflow_documentation/
+*.pdf

@@ -30,8 +30,10 @@ services:
     # Keyed by deal_id, so 6 partitions allows up to 6 parallel consumers.
     command:
       - >-
-        rpk topic list -X brokers=redpanda:9092 | grep -q '^activity.events ' ||
-        rpk topic create activity.events -p 6 -r 1 -X brokers=redpanda:9092
+        for topic in activity.events activity.events.dlq; do
+        rpk topic list -X brokers=redpanda:9092 | grep -q "^$$topic " ||
+        rpk topic create "$$topic" -p 6 -r 1 -X brokers=redpanda:9092 || exit 1;
+        done
     restart: "no"
 
   postgres:
@@ -49,6 +51,22 @@ services:
       interval: 3s
       timeout: 5s
       retries: 20
+
+  deal-state:
+    build:
+      context: ..
+      dockerfile: services/deal-state/Dockerfile
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+      DATABASE_URL: postgres://pulse:pulse@postgres:5432/pipeline_pulse
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      create-topics:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
 volumes:
   redpanda-data:
