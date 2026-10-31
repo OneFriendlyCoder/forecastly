@@ -31,7 +31,8 @@ Maven + Enron data -> simulator -> events.parquet
 | Go deal-state service | Done | [deal_state.md](deal_state.md) |
 | Fault and load testing | Done | [deal_state.md](deal_state.md) |
 | Problems found while building | Ongoing | [postmortem.md](postmortem.md) |
-| Features and model | Not started | |
+| Features and training data | Done | [features.md](features.md) |
+| Model | Not started | |
 | Scoring service | Not started | |
 | API and dashboard | Not started | |
 | Agent over MCP | Not started | |

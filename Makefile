@@ -1,6 +1,6 @@
 COMPOSE := docker compose -f deploy/docker-compose.yml
 
-.PHONY: up down reset check test test-e2e test-faults load-test
+.PHONY: up down reset check snapshots test test-e2e test-faults load-test
 
 up:
 	$(COMPOSE) up -d --wait redpanda postgres
@@ -23,9 +23,13 @@ check:
 		&& echo "kafka ok: message sent and read back"; \
 	STATUS=$$?; $(COMPOSE) exec -T redpanda rpk topic delete smoke.test >/dev/null; exit $$STATUS
 
+snapshots:
+	.venv/bin/python ml/features/build_snapshots.py
+
 test:
 	go test ./...
 	.venv/bin/python ml/simulator/test_simulate.py
+	.venv/bin/python ml/features/test_features.py
 
 test-e2e:  # wipes local Kafka and Postgres data
 	$(MAKE) reset up
