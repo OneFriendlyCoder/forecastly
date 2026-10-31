@@ -241,7 +241,7 @@ The replay tool sends events into Kafka and can inject faults. See [replay_tool.
 
 ### Training data
 
-`training_snapshots` will be built later with the Week 3 feature code, so training and live scoring can share it. It will hold one row per deal per checkpoint, using days since engagement, because "75% through its life" would reveal when the deal ends.
+`training_snapshots` is built by the feature code described in [features.md](features.md). It holds one row per finished deal per checkpoint, using days since engagement, because "75% through its life" would reveal when the deal ends.
 
 ### What we check
 
