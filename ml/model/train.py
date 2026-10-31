@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOTS = ROOT / "data/simulated/training_snapshots.parquet"
 MODEL_PATH = ROOT / "data/models/deal_model.txt"
 RESULTS_PATH = ROOT / "data/model_results.json"
+TEST_DEALS_PATH = ROOT / "data/models/test_deals.json"
 SEED = 42
 
 # Fields from the real CRM data. Everything else comes from the simulator.
@@ -87,9 +88,11 @@ def run(snapshots):
 
 
 def main():
-    model, results = run(load_snapshots())
+    snapshots = load_snapshots()
+    model, results = run(snapshots)
     MODEL_PATH.parent.mkdir(exist_ok=True)
     model.booster_.save_model(MODEL_PATH)
+    TEST_DEALS_PATH.write_text(json.dumps(sorted(split_by_deal(snapshots)[1]["deal_id"].unique())))
     RESULTS_PATH.write_text(json.dumps(results, indent=2) + "\n")
     for name, numbers in results["models"].items():
         print(f"{name}: test AUC {numbers['auc']}, train AUC {numbers['train_auc']}, by day {numbers['auc_by_checkpoint']}")

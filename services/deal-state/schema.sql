@@ -27,3 +27,21 @@ CREATE TABLE IF NOT EXISTS deal_health (
     last_event_id      uuid NOT NULL,
     updated_at         timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS deals (  -- the CRM record; events don't carry these fields
+    deal_id text PRIMARY KEY,
+    product text NOT NULL,
+    amount  double precision NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS deal_scores (
+    deal_id            text NOT NULL,
+    as_of              timestamptz NOT NULL,
+    model_version      text NOT NULL,
+    score              double precision NOT NULL,
+    factors            jsonb NOT NULL,                              -- top 3 reasons for the score
+    features           jsonb NOT NULL,
+    event_published_at timestamptz NOT NULL,                        -- when the newest event entered Kafka
+    scored_at          timestamptz NOT NULL DEFAULT clock_timestamp(),
+    PRIMARY KEY (deal_id, as_of, model_version)                     -- also what makes redelivery safe
+);

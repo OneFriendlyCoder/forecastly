@@ -20,6 +20,15 @@ Maven + Enron data -> simulator -> events.parquet
                                         |
                                         v
                                    Postgres: events, deal_health
+                                        |
+                                        v
+                                   Kafka: deal.features
+                                        |
+                                        v
+                                   Python scoring service
+                                        |
+                                        v
+                                   Postgres: deal_scores
 ```
 
 | Part | Status | Details |
@@ -33,7 +42,7 @@ Maven + Enron data -> simulator -> events.parquet
 | Problems found while building | Ongoing | [postmortem.md](postmortem.md) |
 | Features and training data | Done | [features.md](features.md) |
 | Model | Done | [model.md](model.md) |
-| Scoring service | Not started | |
+| Live features and scoring | Done | [scoring.md](scoring.md) |
 | API and dashboard | Not started | |
 | Agent over MCP | Not started | |
 | CRM connector | Not started | |
@@ -52,20 +61,22 @@ python3 -m venv .venv
 .venv/bin/python ml/data/fit_distributions.py
 .venv/bin/python ml/simulator/simulate.py
 
+make snapshots
+make train
 make up
 .venv/bin/python ml/simulator/replay.py --fast
 ```
 
 ## Main results so far
 
-These come from a laptop in Docker, without scoring. See [deal_state.md](deal_state.md) for the limits.
+These come from a laptop in Docker. See [deal_state.md](deal_state.md) and [scoring.md](scoring.md) for the limits.
 
 | Measure | Result |
 |---|---|
 | Events simulated | 439,821 across 8,300 deals |
 | Clean-vs-faults proof | Final state identical with about 18,000 injected faults and 3 forced kills |
-| Target rate of 1M events/hour | Handled with no backlog, p95 of 0.024 s from Kafka to Postgres |
-| Maximum throughput | 11,888 events/s with 1 consumer, 24,199 with 3 |
+| Target rate of 1M events/hour | Handled with no backlog, p95 of 0.237 s from event to score |
+| Maximum throughput with scoring | 7,597 events/s with 1 consumer, 10,824 with 3 |
 
 ## Changes from the original plan
 

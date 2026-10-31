@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 
 import pandas as pd
-from confluent_kafka import Consumer, Producer
+from confluent_kafka import Consumer, Producer, TopicPartition
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "ml/simulator"))
@@ -46,6 +46,24 @@ def wait_until_caught_up(timeout=600):
             return time.monotonic() - started
         time.sleep(1)
     raise AssertionError("consumer did not catch up")
+
+
+def scoring_backlog():
+    """Updates not yet scored. Reads committed offsets, because rpk's lag is 0 before the first commit."""
+    consumer = Consumer({"bootstrap.servers": BROKERS, "group.id": "scoring"})
+    partitions = [TopicPartition("deal.features", p) for p in range(6)]
+    committed = consumer.committed(partitions, timeout=10)
+    remaining = sum(consumer.get_watermark_offsets(p, timeout=10)[1] - max(p.offset, 0) for p in committed)
+    consumer.close()
+    return remaining
+
+
+def wait_until_scored(timeout=600):
+    wait_until_caught_up(timeout)
+    deadline = time.monotonic() + timeout
+    while scoring_backlog() > 0:
+        assert time.monotonic() < deadline, "scoring did not catch up"
+        time.sleep(1)
 
 
 def check_matches(expected):

@@ -3,82 +3,118 @@
     "scenario": "target rate, 1M events/hour",
     "consumers": 1,
     "events": 16800,
-    "total_seconds": 60.6,
-    "events_per_second": 277,
+    "total_seconds": 60.5,
+    "events_per_second": 278,
     "peak_backlog": 0,
     "backlog_clear_seconds": 0,
+    "scoring_finished_seconds": 60.5,
+    "scores": 9370,
     "latency_seconds": {
       "p50": 0.021,
       "p95": 0.024,
-      "p99": 0.329,
-      "worst": 0.912
+      "p99": 0.395,
+      "worst": 0.993
+    },
+    "event_to_score_seconds": {
+      "p50": 0.141,
+      "p95": 0.237,
+      "p99": 0.252,
+      "worst": 0.374
     },
     "cpu_during_run": {
-      "deal-state-1": "15.12%",
-      "postgres-1": "8.41%",
-      "redpanda-1": "18.44%"
+      "scoring-1": "10.83%",
+      "deal-state-1": "11.74%",
+      "postgres-1": "16.18%",
+      "redpanda-1": "13.83%"
     }
   },
   {
     "scenario": "as fast as possible",
     "consumers": 1,
     "events": 1319463,
-    "total_seconds": 111.0,
-    "events_per_second": 11888,
-    "peak_backlog": 1295902,
-    "backlog_clear_seconds": 98.1,
+    "total_seconds": 173.7,
+    "events_per_second": 7597,
+    "peak_backlog": 1298681,
+    "backlog_clear_seconds": 162.3,
+    "scoring_finished_seconds": 173.7,
+    "scores": 450572,
     "latency_seconds": {
-      "p50": 49.034,
-      "p95": 92.286,
-      "p99": 97.241,
-      "worst": 98.212
+      "p50": 62.898,
+      "p95": 151.166,
+      "p99": 159.743,
+      "worst": 161.838
+    },
+    "event_to_score_seconds": {
+      "p50": 79.704,
+      "p95": 152.932,
+      "p99": 160.723,
+      "worst": 162.374
     },
     "cpu_during_run": {
-      "deal-state-1": "0.00%",
-      "postgres-1": "36.35%",
-      "redpanda-1": "0.54%"
+      "scoring-1": "0.11%",
+      "deal-state-1": "51.61%",
+      "postgres-1": "68.38%",
+      "redpanda-1": "49.47%"
     }
   },
   {
     "scenario": "as fast as possible",
     "consumers": 3,
     "events": 1319463,
-    "total_seconds": 54.5,
-    "events_per_second": 24199,
-    "peak_backlog": 1242131,
-    "backlog_clear_seconds": 42.1,
+    "total_seconds": 121.9,
+    "events_per_second": 10824,
+    "peak_backlog": 1251136,
+    "backlog_clear_seconds": 109.4,
+    "scoring_finished_seconds": 127.4,
+    "scores": 448589,
     "latency_seconds": {
-      "p50": 18.648,
-      "p95": 40.637,
-      "p99": 42.371,
-      "worst": 42.913
+      "p50": 37.802,
+      "p95": 100.703,
+      "p99": 107.048,
+      "worst": 110.348
+    },
+    "event_to_score_seconds": {
+      "p50": 54.654,
+      "p95": 111.843,
+      "p99": 114.678,
+      "worst": 115.434
     },
     "cpu_during_run": {
-      "deal-state-2": "13.05%",
-      "deal-state-3": "46.79%",
-      "deal-state-1": "13.64%",
-      "postgres-1": "153.44%",
-      "redpanda-1": "46.69%"
+      "deal-state-2": "11.46%",
+      "deal-state-3": "12.98%",
+      "scoring-1": "100.47%",
+      "deal-state-1": "45.76%",
+      "postgres-1": "44.83%",
+      "redpanda-1": "51.86%"
     }
   },
   {
     "scenario": "burst",
     "consumers": 1,
     "events": 680000,
-    "total_seconds": 105.1,
-    "events_per_second": 6471,
-    "peak_backlog": 359639,
-    "backlog_clear_seconds": 60.3,
+    "total_seconds": 112.7,
+    "events_per_second": 6035,
+    "peak_backlog": 428175,
+    "backlog_clear_seconds": 67.7,
+    "scoring_finished_seconds": 112.7,
+    "scores": 215392,
     "latency_seconds": {
-      "p50": 10.293,
-      "p95": 24.38,
-      "p99": 26.665,
-      "worst": 27.089
+      "p50": 25.578,
+      "p95": 49.363,
+      "p99": 52.37,
+      "worst": 53.399
+    },
+    "event_to_score_seconds": {
+      "p50": 25.055,
+      "p95": 49.817,
+      "p99": 52.819,
+      "worst": 53.958
     },
     "cpu_during_run": {
-      "deal-state-1": "20.37%",
-      "postgres-1": "17.18%",
-      "redpanda-1": "14.54%"
+      "scoring-1": "40.62%",
+      "deal-state-1": "24.13%",
+      "postgres-1": "25.70%",
+      "redpanda-1": "19.58%"
     }
   }
 ]

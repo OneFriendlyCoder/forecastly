@@ -1,7 +1,8 @@
 """Measure the pipeline under load. Run with: make load-test
 
-Each scenario starts empty. Latency is from entering Kafka to being stored in Postgres,
-so it excludes scoring. The timestamps come from two clocks: the Mac's and the Docker VM's.
+Each scenario starts empty. Latency runs from entering Kafka to being stored in Postgres, and
+event-to-score runs on to the saved score. The timestamps come from two clocks: the Mac's and the
+Docker VM's.
 """
 import json
 import subprocess
@@ -15,7 +16,8 @@ sys.path.insert(0, str(ROOT / "ml/simulator"))
 sys.path.insert(0, str(ROOT / "services/deal-state"))
 from confluent_kafka import Consumer, TopicPartition
 from replay import load_events, replay, scale_events
-from test_e2e import BROKERS, sql
+from seed_deals import seed
+from test_e2e import BROKERS, scoring_backlog, sql
 
 COMPOSE = ["docker", "compose", "-f", str(ROOT / "deploy/docker-compose.yml")]
 TOPIC = "activity.events"
@@ -26,14 +28,19 @@ LATENCY = """SELECT round(percentile_cont(0.5) WITHIN GROUP (ORDER BY s)::numeri
 FROM (SELECT extract(epoch FROM received_at - published_at) AS s FROM events) t"""
 
 
+EVENT_TO_SCORE = LATENCY.replace("received_at - published_at", "scored_at - event_published_at").replace(
+    "FROM events t", "FROM deal_scores t").replace("FROM events)", "FROM deal_scores)")
+
+
 def backlog(consumer):
     """Messages in Kafka minus events stored. Exact here because load runs have no duplicates."""
     in_kafka = sum(consumer.get_watermark_offsets(TopicPartition(TOPIC, p), timeout=5)[1] for p in range(6))
     return in_kafka - sql("SELECT count(*) AS n FROM events")["n"].iloc[0]
 
 
-def fresh_stack(consumers):
+def fresh_stack(consumers, copies):
     subprocess.run(["make", "reset", "up"], cwd=ROOT, check=True, capture_output=True)
+    seed(copies)
     if consumers > 1:
         subprocess.run([*COMPOSE, "up", "-d", "--scale", f"deal-state={consumers}", "deal-state"],
                        check=True, capture_output=True)
@@ -47,8 +54,8 @@ def container_cpu():
             for line in out.splitlines() if "pipeline-pulse" in line}
 
 
-def run(name, table, consumers=1, **replay_args):
-    fresh_stack(consumers)
+def run(name, table, consumers=1, copies=1, **replay_args):
+    fresh_stack(consumers, copies)
     result = {}
 
     def send():
@@ -70,6 +77,10 @@ def run(name, table, consumers=1, **replay_args):
         assert time.monotonic() - started < 900, "did not catch up"
         time.sleep(0.5)
     finished = time.monotonic()
+    while scoring_backlog() > 0:
+        assert time.monotonic() - started < 1800, "scoring did not catch up"
+        time.sleep(0.5)
+    scored = time.monotonic()
     sender.join()
     watcher.close()
 
@@ -83,7 +94,10 @@ def run(name, table, consumers=1, **replay_args):
         "events_per_second": round(stored / (finished - started)),
         "peak_backlog": int(peak),
         "backlog_clear_seconds": round(finished - clear_after_peak, 1) if clear_after_peak else 0,
+        "scoring_finished_seconds": round(scored - started, 1),
+        "scores": int(sql("SELECT count(*) AS n FROM deal_scores")["n"].iloc[0]),
         "latency_seconds": sql(LATENCY).iloc[0].to_dict(),
+        "event_to_score_seconds": sql(EVENT_TO_SCORE).iloc[0].to_dict(),
         "cpu_during_run": cpu,
     }
     print(json.dumps(summary), flush=True)
@@ -95,9 +109,9 @@ def main():
     scaled = scale_events(base, 3)
     results = [
         run("target rate, 1M events/hour", base, profile=[(60, 280)]),
-        run("as fast as possible", scaled, seconds_per_day=0),
-        run("as fast as possible", scaled, consumers=3, seconds_per_day=0),
-        run("burst", scaled, profile=[(30, 2000), (10, 50000), (60, 2000)]),
+        run("as fast as possible", scaled, copies=3, seconds_per_day=0),
+        run("as fast as possible", scaled, consumers=3, copies=3, seconds_per_day=0),
+        run("burst", scaled, copies=3, profile=[(30, 2000), (10, 50000), (60, 2000)]),
     ]
     (ROOT / "data/load_test_results.json").write_text(json.dumps(results, indent=2) + "\n")
 

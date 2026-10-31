@@ -1,7 +1,9 @@
-// Command deal-state reads activity events from Kafka and keeps a live record per deal in Postgres.
+// Command deal-state reads activity events from Kafka, keeps a live record per deal in Postgres,
+// and publishes each changed deal's features for scoring.
 //
-// Delivery is at-least-once: offsets are committed only after Postgres commits, and the events
-// primary key turns any redelivery into a no-op. Broken events go to a dead-letter topic.
+// Delivery is at-least-once: offsets are committed only after Postgres commits and features are
+// published, and the events primary key turns any redelivery into a no-op. Broken events go to a
+// dead-letter topic.
 package main
 
 import (
@@ -25,14 +27,18 @@ import (
 )
 
 const (
-	topic    = "activity.events"
-	dlqTopic = "activity.events.dlq"
-	group    = "deal-state"
-	maxBatch = 2000
+	topic         = "activity.events"
+	dlqTopic      = "activity.events.dlq"
+	featuresTopic = "deal.features"
+	group         = "deal-state"
+	maxBatch      = 2000
 )
 
 //go:embed schema.sql
 var schemaSQL string
+
+//go:embed features.sql
+var featuresSQL string
 
 // Each query is built from a fixed event type, never from message data. The schema check
 // limits event_type to these keys, and one statement keeps the insert and count atomic.
@@ -123,6 +129,32 @@ func save(ctx context.Context, db *pgx.Conn, events []event) error {
 	})
 }
 
+// publishFeatures sends one update per deal in the batch, however many events it had. It runs
+// even if every event was a redelivery, so a crash between saving and publishing loses nothing.
+func publishFeatures(ctx context.Context, db *pgx.Conn, client *kgo.Client, events []event) error {
+	seen := make(map[string]bool, len(events))
+	dealIDs := make([]string, 0, len(events))
+	for _, e := range events {
+		if !seen[e.DealID] {
+			seen[e.DealID] = true
+			dealIDs = append(dealIDs, e.DealID)
+		}
+	}
+	rows, err := db.Query(ctx, featuresSQL, dealIDs)
+	if err != nil {
+		return err
+	}
+	records, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*kgo.Record, error) {
+		var dealID, features string
+		err := row.Scan(&dealID, &features)
+		return &kgo.Record{Topic: featuresTopic, Key: []byte(dealID), Value: []byte(features)}, err
+	})
+	if err != nil || len(records) == 0 {
+		return err
+	}
+	return client.ProduceSync(ctx, records...).FirstErr()
+}
+
 func handle(ctx context.Context, schema *jsonschema.Schema, db *pgx.Conn, client *kgo.Client, records []*kgo.Record) error {
 	events := make([]event, 0, len(records))
 	var dead []*kgo.Record
@@ -144,6 +176,9 @@ func handle(ctx context.Context, schema *jsonschema.Schema, db *pgx.Conn, client
 		if err := client.ProduceSync(ctx, dead...).FirstErr(); err != nil {
 			return fmt.Errorf("writing dead letters: %w", err)
 		}
+	}
+	if err := publishFeatures(ctx, db, client, events); err != nil {
+		return fmt.Errorf("publishing features: %w", err)
 	}
 	return nil
 }
