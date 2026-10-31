@@ -193,7 +193,7 @@ def simulate(deals, cfg):
 
 def write(events, contacts, health, out):
     out.mkdir(parents=True, exist_ok=True)
-    table = pd.DataFrame(events).sort_values(["occurred_at", "event_id"])
+    table = pd.DataFrame(events).sort_values("occurred_at", kind="stable")  # keeps each deal's event order
     table["actor"] = table["actor"].map(json.dumps)
     table["payload"] = table["payload"].map(json.dumps)
     table.to_parquet(out / "events.parquet", index=False)
