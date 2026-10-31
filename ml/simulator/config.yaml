@@ -1,0 +1,35 @@
+# All generator numbers live here. Rates are starting guesses, not fitted values.
+seed: 42
+tenant_id: demo
+data_end: "2017-12-31"
+messy_share: 0.15          # deals whose activity goes against their result
+
+prelude_days: [7, 21]      # first contact happens this long before engaged_at
+open_deal_length: 90       # days, sets how fast health moves on deals with no end
+max_contacts: 6
+
+health:
+  start: 0.5
+  start_jitter: 0.05
+  noise: 0.03
+  pull: 3.0                # higher reaches the target sooner
+  late_fall_at: 0.85       # share of the deal after which a healthy loss collapses
+  late_fall_pull: 4.0      # multiplies pull during the collapse
+  targets: {won: 0.8, lost: 0.2, won_messy: 0.3, lost_messy: 0.8, lost_messy_final: 0.2, open: 0.5}
+
+# [value at health 0, value at health 1]
+rates:
+  emails_per_week: [2.5, 2.5]
+  reply_chance: [0.10, 0.60]
+  meetings_per_week: [0.1, 0.7]
+  no_show_chance: [0.30, 0.05]
+  contacts_per_week: [0.1, 0.5]
+  extra_pushes_per_week: [0.4, 0.02]
+
+rep_activity_spread: 0.3   # log-normal spread of how busy each rep is
+buyer_reply_slowdown: 4.0  # buyers answer slower than Enron coworkers (assumption)
+reply_slowdown_at_zero_health: 3.0
+max_reply_hours: 720
+push_days: [14, 45]
+push_window_days: 14       # extra pushes happen this close to the expected date
+workday_hours: [9, 18]

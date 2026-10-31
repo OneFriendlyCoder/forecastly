@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "event.v1.json",
+  "title": "Pipeline Pulse activity event, version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "occurred_at", "tenant_id", "deal_id", "account_id", "actor", "payload", "schema_version"],
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "event_type": {"enum": ["email_sent", "email_replied", "meeting_held", "meeting_no_show", "contact_added", "close_date_changed", "stage_changed", "deal_closed"]},
+    "occurred_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "tenant_id": {"type": "string"},
+    "deal_id": {"type": "string"},
+    "account_id": {"type": ["string", "null"]},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["rep", "contact", "system"]},
+        "id": {"type": "string"},
+        "role": {"$ref": "#/$defs/role"}
+      }
+    },
+    "payload": {"type": "object"},
+    "schema_version": {"const": 1}
+  },
+  "allOf": [
+    {"if": {"properties": {"event_type": {"const": "email_sent"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/email_sent"}}}},
+    {"if": {"properties": {"event_type": {"const": "email_replied"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/email_replied"}}}},
+    {"if": {"properties": {"event_type": {"const": "meeting_held"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/meeting"}}}},
+    {"if": {"properties": {"event_type": {"const": "meeting_no_show"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/meeting"}}}},
+    {"if": {"properties": {"event_type": {"const": "contact_added"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/contact_added"}}}},
+    {"if": {"properties": {"event_type": {"const": "close_date_changed"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/close_date_changed"}}}},
+    {"if": {"properties": {"event_type": {"const": "stage_changed"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/stage_changed"}}}},
+    {"if": {"properties": {"event_type": {"const": "deal_closed"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/deal_closed"}}}}
+  ],
+  "$defs": {
+    "role": {"enum": ["champion", "economic_buyer", "technical_evaluator", "end_user"]},
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "email_sent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["message_id", "contact_id", "sequence_step", "template_id"],
+      "properties": {"message_id": {"type": "string"}, "contact_id": {"type": "string"}, "sequence_step": {"type": "integer", "minimum": 1}, "template_id": {"type": "string"}}
+    },
+    "email_replied": {
+      "type": "object", "additionalProperties": false,
+      "required": ["message_id", "reply_delay_hours", "sentiment"],
+      "properties": {"message_id": {"type": "string"}, "reply_delay_hours": {"type": "number", "exclusiveMinimum": 0}, "sentiment": {"enum": ["positive", "neutral", "negative"]}}
+    },
+    "meeting": {
+      "type": "object", "additionalProperties": false,
+      "required": ["meeting_type", "attendees"],
+      "properties": {"meeting_type": {"enum": ["discovery", "demo", "pricing", "legal"]}, "attendees": {"type": "array", "items": {"type": "string"}, "minItems": 1}}
+    },
+    "contact_added": {
+      "type": "object", "additionalProperties": false,
+      "required": ["contact_id", "role"],
+      "properties": {"contact_id": {"type": "string"}, "role": {"$ref": "#/$defs/role"}}
+    },
+    "close_date_changed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["old", "new"],
+      "properties": {"old": {"$ref": "#/$defs/date"}, "new": {"$ref": "#/$defs/date"}}
+    },
+    "stage_changed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {"from": {"type": "string"}, "to": {"type": "string"}}
+    },
+    "deal_closed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["outcome", "amount"],
+      "properties": {"outcome": {"enum": ["won", "lost"]}, "amount": {"type": "number", "minimum": 0}}
+    }
+  }
+}
