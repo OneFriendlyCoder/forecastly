@@ -74,7 +74,7 @@ These come from a laptop in Docker, without scoring. See [deal_state.md](deal_st
 | Stage-weighted baseline | Win rate by stage and days open | The plan's version gives every finished deal the same 63% |
 | Model numbers as targets | Numbers to report honestly | The simulator's settings could decide the score |
 | Early warning on all lost deals | Only lost deals lasting over 14 days | About half of lost deals end within 14 days |
-| 13 event types | 8 | The extra types added little to the engineering |
+| 12 event types | 8 | The extra types added little to the engineering |
 | Tuning the simulator to match real data | Rule checks and a leakage check | The simulator is mainly a test tool |
 | `processed_events` table | Primary key on `events` | It does the same job with less code |
 | Redis at the start | Added when it's needed | Nothing uses it yet |
