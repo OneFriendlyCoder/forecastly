@@ -81,6 +81,19 @@ services:
         condition: service_started
     restart: unless-stopped  # also covers starting before deal-state has made the tables
 
+  api:
+    build:
+      context: ..
+      dockerfile: services/api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://pulse:pulse@postgres:5432/pipeline_pulse
+    ports:
+      - "127.0.0.1:8080:8080"  # no login yet, so only this machine can reach it
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   redpanda-data:
   postgres-data:
