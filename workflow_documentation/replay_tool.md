@@ -19,6 +19,7 @@ make up
 .venv/bin/python ml/simulator/replay.py --seconds-per-day 0.5  # faster
 .venv/bin/python ml/simulator/replay.py --fast                 # no pauses
 .venv/bin/python ml/simulator/replay.py --limit 1000           # first 1,000 events
+.venv/bin/python ml/simulator/replay.py --fast --faults        # inject faults
 .venv/bin/python ml/simulator/test_replay.py                   # checks
 ```
 
@@ -31,10 +32,24 @@ At 1 simulated day = 1 second, the full history takes about 7 minutes.
 3. Sends it as JSON, using `deal_id` as the key, so each deal stays on one partition and in order.
 4. Stops with an error if any event fails to deliver.
 
+## Fault injection
+
+`--faults` changes what goes into Kafka, using a fixed seed so every run injects the same faults.
+
+| Fault | Share of events | What it does |
+|---|---|---|
+| Duplicates | 2% | Sends an extra exact copy shortly after |
+| Late | 2% | Sends the event up to 5,000 positions later |
+| Broken | 0.1% | Adds a corrupted copy: cut short, or with a wrong `schema_version` |
+
+Every real event is still sent, so the final deal state must not change. `make test-faults` proves that, as described in [deal_state.md](deal_state.md).
+
+Traffic bursts and `--scale` aren't built yet.
+
 ## Things to know
 
 - **Repeat runs add events:** each run sends everything again. Run `make reset`, then `make up`, for an empty topic.
-- **No faults yet:** this version sends clean events only.
+- **Fault runs break the send order on purpose:** late events can arrive out of order, so `--faults` isn't meant for checking order.
 - **Throughput:** the first test run sent about 136,000 events per second. That only measures sending to Redpanda on a laptop, not the whole pipeline.
 
 ## What the checks confirm

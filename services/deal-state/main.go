@@ -52,7 +52,8 @@ INSERT INTO deal_health (deal_id, %[1]s, last_event_at, last_event_id)
 SELECT deal_id, 1, occurred_at, event_id FROM inserted
 ON CONFLICT (deal_id) DO UPDATE SET
     %[1]s = deal_health.%[1]s + 1,
-    last_event_id = CASE WHEN EXCLUDED.last_event_at >= deal_health.last_event_at
+    -- event_id breaks ties, so the result doesn't depend on arrival order
+    last_event_id = CASE WHEN (EXCLUDED.last_event_at, EXCLUDED.last_event_id) > (deal_health.last_event_at, deal_health.last_event_id)
                          THEN EXCLUDED.last_event_id ELSE deal_health.last_event_id END,
     last_event_at = GREATEST(deal_health.last_event_at, EXCLUDED.last_event_at),
     updated_at = now()`, eventType)
@@ -165,6 +166,7 @@ func run(ctx context.Context) error {
 		kgo.ConsumeTopics(topic),
 		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
 		kgo.DisableAutoCommit(),
+		kgo.SessionTimeout(10*time.Second), // a killed consumer's partitions move on after this long
 		kgo.BlockRebalanceOnPoll(),
 	)
 	if err != nil {

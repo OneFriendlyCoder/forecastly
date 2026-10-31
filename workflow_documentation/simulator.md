@@ -2,7 +2,7 @@
 
 This document explains how the simulator is built today. For the data it reads and the assumptions behind it, see [data.md](data.md).
 
-Status: the generator and the replay tool are built and pass their checks. Fault injection is not built yet.
+Status: the generator and the replay tool are built and pass their checks, including fault injection.
 
 ## Purpose
 
@@ -13,7 +13,7 @@ It has two parts:
 | Part | Job | Status |
 |---|---|---|
 | Generator | Turns deals into a dated list of events | Built |
-| Replay tool | Sends those events into Kafka | Built, without fault injection |
+| Replay tool | Sends those events into Kafka and injects faults | Built |
 
 Keeping them apart means the generator knows nothing about Kafka, and the replay tool knows nothing about deals or health.
 
@@ -200,6 +200,8 @@ make up
 .venv/bin/python ml/simulator/test_replay.py
 ```
 
+Fault injection is covered in [replay_tool.md](replay_tool.md).
+
 - **Order:** events go out in time order, and the key keeps each deal on one partition.
 - **Partitioning:** it uses the murmur2 method, matching the default in Java and common Go Kafka clients.
 - **Safe delivery:** the producer runs in idempotent mode, so a retry can't create a duplicate. The tool stops with an error if any event fails.
@@ -220,6 +222,6 @@ These are accepted for now, because they affect realism and not the pipeline.
 
 ## What's next
 
-1. Add fault injection once the Go deal-state service exists: duplicates, late events, broken events, traffic bursts, and a consumer killed mid-run.
-2. Add the clean-vs-faults test: the final state of every deal must be identical either way.
-3. Add a `--scale` setting that copies deals for load testing.
+1. Add traffic bursts and a `--scale` setting that copies deals, for load testing.
+
+See [replay_tool.md](replay_tool.md) for fault injection and [deal_state.md](deal_state.md) for the clean-vs-faults proof.

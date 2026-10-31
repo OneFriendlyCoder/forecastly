@@ -33,10 +33,10 @@ def sql(query):
 def lag():
     out = subprocess.run([*COMPOSE, "redpanda", "rpk", "group", "describe", "deal-state"],
                          check=True, capture_output=True, text=True).stdout
-    for line in out.splitlines():
-        if line.startswith("TOTAL-LAG"):
-            return int(line.split()[1].replace(",", ""))
-    return None
+    fields = dict(line.split(maxsplit=1) for line in out.splitlines() if len(line.split()) == 2)
+    if fields.get("STATE") != "Stable":  # lag reads 0 during a rebalance, which means nothing
+        return None
+    return int(fields["TOTAL-LAG"].replace(",", ""))
 
 
 def wait_until_caught_up(timeout=600):
@@ -59,7 +59,7 @@ def read_dlq(count):
     consumer = Consumer({"bootstrap.servers": BROKERS, "group.id": f"check-{time.time()}", "auto.offset.reset": "earliest"})
     consumer.subscribe(["activity.events.dlq"])
     values = []
-    deadline = time.monotonic() + 30
+    deadline = time.monotonic() + 15
     while len(values) < count and time.monotonic() < deadline:
         msg = consumer.poll(1)
         if msg is not None and not msg.error():
