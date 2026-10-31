@@ -29,6 +29,9 @@ Maven + Enron data -> simulator -> events.parquet
                                         |
                                         v
                                    Postgres: deal_scores
+                                        |
+                                        v
+                                   Go API
 ```
 
 | Part | Status | Details |
@@ -43,7 +46,8 @@ Maven + Enron data -> simulator -> events.parquet
 | Features and training data | Done | [features.md](features.md) |
 | Model | Done | [model.md](model.md) |
 | Live features and scoring | Done | [scoring.md](scoring.md) |
-| API and dashboard | Not started | |
+| Go API | Done | [api.md](api.md) |
+| Dashboard | Not started | |
 | Agent over MCP | Not started | |
 | CRM connector | Not started | |
 | CI | Not started | |
