@@ -222,6 +222,6 @@ These are accepted for now, because they affect realism and not the pipeline.
 
 ## What's next
 
-1. Add traffic bursts and a `--scale` setting that copies deals, for load testing.
+The simulator work is finished for now.
 
-See [replay_tool.md](replay_tool.md) for fault injection and [deal_state.md](deal_state.md) for the clean-vs-faults proof.
+See [replay_tool.md](replay_tool.md) for fault injection and load settings, and [deal_state.md](deal_state.md) for the clean-vs-faults proof and load test.

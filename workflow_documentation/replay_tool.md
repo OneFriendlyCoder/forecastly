@@ -20,6 +20,8 @@ make up
 .venv/bin/python ml/simulator/replay.py --fast                 # no pauses
 .venv/bin/python ml/simulator/replay.py --limit 1000           # first 1,000 events
 .venv/bin/python ml/simulator/replay.py --fast --faults        # inject faults
+.venv/bin/python ml/simulator/replay.py --fast --scale 3       # 3 copies of every deal
+.venv/bin/python ml/simulator/replay.py --scale 2 --profile 30:2000,10:50000,60:2000  # burst
 .venv/bin/python ml/simulator/test_replay.py                   # checks
 ```
 
@@ -44,7 +46,12 @@ At 1 simulated day = 1 second, the full history takes about 7 minutes.
 
 Every real event is still sent, so the final deal state must not change. `make test-faults` proves that, as described in [deal_state.md](deal_state.md).
 
-Traffic bursts and `--scale` aren't built yet.
+## Load settings
+
+- **`--scale N`:** repeats every deal N times under new deal and event ids, so volume grows without creating duplicates.
+- **`--profile`:** sets the send rate directly. `30:2000,10:50000` means 30 seconds at 2,000 events/s, then 10 seconds at 50,000. It ignores event times and needs enough events to fill the profile.
+
+`make load-test` uses both. The results are in [deal_state.md](deal_state.md).
 
 ## Things to know
 

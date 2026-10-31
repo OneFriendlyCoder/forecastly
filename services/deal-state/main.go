@@ -43,8 +43,8 @@ var applyEvent = func() map[string]string {
 	for _, eventType := range types {
 		queries[eventType] = fmt.Sprintf(`
 WITH inserted AS (
-    INSERT INTO events (event_id, event_type, occurred_at, tenant_id, deal_id, account_id, actor, payload, schema_version)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    INSERT INTO events (event_id, event_type, occurred_at, tenant_id, deal_id, account_id, actor, payload, schema_version, published_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     ON CONFLICT (event_id) DO NOTHING
     RETURNING deal_id, occurred_at, event_id
 )
@@ -72,6 +72,7 @@ type event struct {
 	Payload       json.RawMessage `json:"payload"`
 	SchemaVersion int             `json:"schema_version"`
 	occurredAt    time.Time
+	publishedAt   time.Time
 }
 
 func compileSchema() (*jsonschema.Schema, error) {
@@ -115,7 +116,7 @@ func save(ctx context.Context, db *pgx.Conn, events []event) error {
 	batch := &pgx.Batch{}
 	for _, e := range events {
 		batch.Queue(applyEvent[e.EventType], e.EventID, e.EventType, e.occurredAt, e.TenantID, e.DealID,
-			e.AccountID, string(e.Actor), string(e.Payload), e.SchemaVersion)
+			e.AccountID, string(e.Actor), string(e.Payload), e.SchemaVersion, e.publishedAt)
 	}
 	return pgx.BeginFunc(ctx, db, func(tx pgx.Tx) error {
 		return tx.SendBatch(ctx, batch).Close()
@@ -133,6 +134,7 @@ func handle(ctx context.Context, schema *jsonschema.Schema, db *pgx.Conn, client
 				Headers: []kgo.RecordHeader{{Key: "error", Value: []byte(err.Error())}}})
 			continue
 		}
+		e.publishedAt = record.Timestamp
 		events = append(events, e)
 	}
 	if err := save(ctx, db, events); err != nil {

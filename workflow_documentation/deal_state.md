@@ -16,6 +16,7 @@ make up        # starts Redpanda, Postgres and the service
 make test      # unit tests and generator checks
 make test-e2e  # full test, wipes local Kafka and Postgres data first
 make test-faults  # clean-vs-faults proof, wipes local data several times
+make load-test    # performance scenarios, wipes local data several times
 
 .venv/bin/python ml/simulator/replay.py --limit 1000  # send some events
 make down      # stop everything, keep the data
@@ -82,6 +83,30 @@ Building this test found two problems:
 
 - **Slow recovery:** after a kill, Kafka waited up to 45 seconds to move the dead consumer's work, so the session timeout is now 10 seconds.
 - **Misleading backlog:** Kafka reports a backlog of 0 while it's reassigning work. Tests now trust that number only when the consumer group is stable.
+
+## Load test
+
+`make load-test` runs four scenarios, each from an empty system, and writes the results to `data/load_test_results.json`. The copies from `--scale` have new ids, so nothing is skipped as a duplicate.
+
+| Scenario | Consumers | Events | Throughput | Peak backlog | p95 latency |
+|---|---|---|---|---|---|
+| Target rate (1M events/hour) | 1 | 16,800 | 277/s, the rate requested | 0 | 0.024 s |
+| As fast as possible | 1 | 1,319,463 | 11,888/s | 1.30M | 92 s |
+| As fast as possible | 3 | 1,319,463 | 24,199/s | 1.24M | 41 s |
+| Burst | 1 | 680,000 | Not a limit test | 359,639 | 24 s |
+
+- **Latency:** this is the time from entering Kafka to being stored in Postgres, and it excludes scoring. In the fast runs it mostly measures time spent waiting in the backlog. The target-rate run reached 0.33 s at p99 and 0.91 s at worst.
+- **Capacity:** about 43 million events an hour with one consumer, and 87 million with three, projected from runs of about 2 minutes or less.
+- **Scaling:** three consumers gave about twice the throughput of one, not three times.
+- **Likely bottleneck:** Postgres, which used 153% CPU in the 3-consumer run while the most any consumer used was 47%. This rests on one CPU sample per run, so it's a lead, not proof.
+- **Burst:** 50,000 events/s for 10 seconds, between steady periods at 2,000/s. The backlog peaked at about 360,000 and cleared in 60 seconds, while steady traffic continued. All events were stored.
+
+### Limits of these numbers
+
+- Everything ran on one laptop in Docker with 8 CPUs, including the replay tool that generates the load.
+- Scoring isn't included, so these numbers will fall once the service does more work.
+- The runs are short, and the database was small each time, so a long run could be slower.
+- Latency uses two clocks, the Mac's and the Docker VM's, so very small values may be off by a little.
 
 ## Differences from the project plan
 

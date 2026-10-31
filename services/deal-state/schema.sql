@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS events (
     actor          jsonb NOT NULL,
     payload        jsonb NOT NULL,
     schema_version int NOT NULL,
-    received_at    timestamptz NOT NULL DEFAULT now()
+    published_at   timestamptz NOT NULL,                        -- when it entered Kafka
+    received_at    timestamptz NOT NULL DEFAULT clock_timestamp()  -- when Postgres stored it
 );
 CREATE INDEX IF NOT EXISTS events_deal_time ON events (deal_id, occurred_at);
 

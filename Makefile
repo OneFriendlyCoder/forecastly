@@ -1,6 +1,6 @@
 COMPOSE := docker compose -f deploy/docker-compose.yml
 
-.PHONY: up down reset check test test-e2e test-faults
+.PHONY: up down reset check test test-e2e test-faults load-test
 
 up:
 	$(COMPOSE) up -d --wait redpanda postgres
@@ -34,3 +34,7 @@ test-e2e:  # wipes local Kafka and Postgres data
 test-faults:  # wipes local Kafka and Postgres data, several times
 	$(MAKE) up
 	.venv/bin/python services/deal-state/test_faults.py
+
+load-test:  # wipes local Kafka and Postgres data, several times
+	$(MAKE) up
+	.venv/bin/python services/deal-state/load_test.py

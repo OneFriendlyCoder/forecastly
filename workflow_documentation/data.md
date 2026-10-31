@@ -2,7 +2,7 @@
 
 This document explains what data the project uses, what that data can and can't tell us, the assumptions we made, and what the simulator will add.
 
-Status: data setup is finished and all table checks pass. The simulator's generator is built and passes its checks. The Kafka replay tool is not built yet.
+Status: data setup is finished and all table checks pass. The simulator is built, and [simulator.md](simulator.md) describes how it works.
 
 ## Project priorities
 
@@ -195,7 +195,7 @@ It doesn't teach the model anything directly, and its emails never become deal e
 | Settings | Done | `ml/simulator/config.yaml` |
 | Generator | Done | `ml/simulator/simulate.py` |
 | Rule checks | Done | `ml/simulator/test_simulate.py` |
-| Kafka replay and fault injection | Not started | `ml/simulator/replay.py` |
+| Kafka replay and fault injection | Done | `ml/simulator/replay.py` |
 
 To run it from the repo root:
 
@@ -235,11 +235,11 @@ The early-signal check uses only activity from the first half of each finished d
 
 Close-date pushes go the opposite way from the project plan: won deals get slightly more, because they run longer and pass their expected date more often.
 
-### Replay tool (next)
+### Replay tool
 
-The replay tool will send events into Kafka, keyed by `deal_id`, and can inject faults: duplicates, late events, broken events, traffic bursts, and a consumer killed mid-run. The key test runs the same events clean and with every fault switched on, and the final state of every deal must be identical.
+The replay tool sends events into Kafka and can inject faults. See [replay_tool.md](replay_tool.md).
 
-It needs the Go deal-state service as a consumer before faults can be tested. A `--scale` setting will copy deals to reach load-test volumes.
+### Training data
 
 `training_snapshots` will be built later with the Week 3 feature code, so training and live scoring can share it. It will hold one row per deal per checkpoint, using days since engagement, because "75% through its life" would reveal when the deal ends.
 
