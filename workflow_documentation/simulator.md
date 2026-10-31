@@ -2,7 +2,7 @@
 
 This document explains how the simulator is built today. For the data it reads and the assumptions behind it, see [data.md](data.md).
 
-Status: the generator is built and passes its checks. The Kafka replay tool is not built yet.
+Status: the generator and the replay tool are built and pass their checks. Fault injection is not built yet.
 
 ## Purpose
 
@@ -13,7 +13,7 @@ It has two parts:
 | Part | Job | Status |
 |---|---|---|
 | Generator | Turns deals into a dated list of events | Built |
-| Replay tool | Sends those events into Kafka and injects faults | Not started |
+| Replay tool | Sends those events into Kafka | Built, without fault injection |
 
 Keeping them apart means the generator knows nothing about Kafka, and the replay tool knows nothing about deals or health.
 
@@ -27,7 +27,7 @@ ml/simulator/config.yaml ----------+                      events.parquet
                                                           health_paths.parquet
                                                                 |
                                                                 v
-                                                     replay.py (not built) --> Kafka
+                                                     replay.py --> Kafka (activity.events)
 ```
 
 ## Files
@@ -38,7 +38,10 @@ ml/simulator/config.yaml ----------+                      events.parquet
 | `ml/simulator/config.yaml` | Every rate and setting |
 | `ml/simulator/distributions.json` | Numbers fitted from real data |
 | `ml/simulator/simulate.py` | The generator |
-| `ml/simulator/test_simulate.py` | The checks |
+| `ml/simulator/test_simulate.py` | The generator checks |
+| `ml/simulator/replay.py` | The replay tool |
+| `ml/simulator/test_replay.py` | The replay checks, which need Kafka running |
+| `ml/requirements.txt` | Python packages |
 
 To run it from the repo root:
 
@@ -181,6 +184,31 @@ Every event uses the same envelope. `actor` and `payload` are stored as JSON tex
 - The same seed gives identical data, and a new seed changes it.
 - Early signal, using activity from the first half of each finished deal, falls between 0.55 and 0.95. The first run scored 0.61, where 0.5 is guessing and 1.0 is perfect.
 
+## Replay tool
+
+The replay tool reads `events.parquet` and sends each event to `activity.events` as JSON, using `deal_id` as the key.
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r ml/requirements.txt
+make up
+
+.venv/bin/python ml/simulator/replay.py                        # 1 simulated day = 1 second
+.venv/bin/python ml/simulator/replay.py --seconds-per-day 0.5  # faster
+.venv/bin/python ml/simulator/replay.py --fast                 # no pauses
+.venv/bin/python ml/simulator/replay.py --limit 1000           # first 1,000 events
+.venv/bin/python ml/simulator/test_replay.py
+```
+
+- **Order:** events go out in time order, and the key keeps each deal on one partition.
+- **Partitioning:** it uses the murmur2 method, matching the default in Java and common Go Kafka clients.
+- **Safe delivery:** the producer runs in idempotent mode, so a retry can't create a duplicate. The tool stops with an error if any event fails.
+- **Repeat runs:** every run adds the events to the topic again. Use `make reset` and `make up` to start from an empty topic.
+
+`test_replay.py` uses temporary topics, so `activity.events` stays empty. It sends all 439,821 events, then checks that every event arrives once, each deal's events arrive in order, and each deal stays on one partition. It validates the first 5,000 received events against the schema, and also checks the speed setting.
+
+The first run sent about 136,000 events per second. That measures sending from the tool to Redpanda on a laptop, not the whole pipeline.
+
 ## Known limits
 
 These are accepted for now, because they affect realism and not the pipeline.
@@ -192,8 +220,6 @@ These are accepted for now, because they affect realism and not the pipeline.
 
 ## What's next
 
-1. Add Docker Compose with Redpanda.
-2. Build `replay.py`, which sends events into Kafka in time order, keyed by `deal_id`, at a chosen speed.
-3. Add fault injection once the Go deal-state service exists: duplicates, late events, broken events, traffic bursts, and a consumer killed mid-run.
-4. Add the clean-vs-faults test: the final state of every deal must be identical either way.
-5. Add a `--scale` setting that copies deals for load testing.
+1. Add fault injection once the Go deal-state service exists: duplicates, late events, broken events, traffic bursts, and a consumer killed mid-run.
+2. Add the clean-vs-faults test: the final state of every deal must be identical either way.
+3. Add a `--scale` setting that copies deals for load testing.
