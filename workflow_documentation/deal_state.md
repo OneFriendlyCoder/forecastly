@@ -88,6 +88,8 @@ Building this test found two problems:
 
 `make load-test` runs four scenarios, each from an empty system, and writes the results to `data/load_test_results.json`. The copies from `--scale` have new ids, so nothing is skipped as a duplicate.
 
+These figures were measured before live scoring was added. The script now includes scoring, so the current results are in [scoring.md](scoring.md) and the JSON file.
+
 | Scenario | Consumers | Events | Throughput | Peak backlog | p95 latency |
 |---|---|---|---|---|---|
 | Target rate (1M events/hour) | 1 | 16,800 | 277/s, the rate requested | 0 | 0.024 s |
@@ -104,7 +106,7 @@ Building this test found two problems:
 ### Limits of these numbers
 
 - Everything ran on one laptop in Docker with 8 CPUs, including the replay tool that generates the load.
-- Scoring isn't included, so these numbers will fall once the service does more work.
+- Scoring isn't included. Adding it lowered throughput, as shown in [scoring.md](scoring.md).
 - The runs are short, and the database was small each time, so a long run could be slower.
 - Latency uses two clocks, the Mac's and the Docker VM's, so very small values may be off by a little.
 
@@ -113,4 +115,3 @@ Building this test found two problems:
 - **No `processed_events` table:** the `events` primary key already prevents duplicates.
 - **`events` isn't split by month:** this isn't needed at this size.
 - **Typed count columns:** `deal_health` uses a column per event type, not a `features` JSON field.
-- **No `deal.features` topic yet:** this comes with the scoring step.

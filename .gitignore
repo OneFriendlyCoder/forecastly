@@ -3,3 +3,4 @@ data/processed/
 __pycache__/
 data/simulated/
 .venv/
+data/models/
