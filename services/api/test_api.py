@@ -44,6 +44,40 @@ def check_at_risk(latest):
     print(f"ok: at-risk list matches Postgres ({len(body['deals'])} deals, closed deals excluded)")
 
 
+def check_filters(latest):
+    def risk(score):
+        return "high" if score < 0.4 else "medium" if score < 0.6 else "low"
+
+    open_deals = latest[latest["deal_closed"] == 0].assign(risk=lambda t: t["score"].map(risk))
+    status, summary = get("/deals/summary")
+    assert status == 200 and summary["scored_deals"] == len(open_deals)
+    for level in ("high", "medium", "low"):
+        expected = open_deals[open_deals["risk"] == level]
+        assert summary[level]["deals"] == len(expected), level
+        body = get(f"/deals/at-risk?risk={level}&limit=1000")[1]
+        assert body["total"] == len(expected), level
+        assert all(d["risk"] == level for d in body["deals"]), level
+        print(f"ok: {level} risk filter matches Postgres ({len(expected)} deals)")
+    assert sum(summary[level]["deals"] for level in ("high", "medium", "low")) == len(open_deals)
+
+    first = get("/deals/at-risk?limit=2")[1]["deals"]
+    assert get("/deals/at-risk?limit=1&offset=1")[1]["deals"] == first[1:], "pages must follow on"
+    product, owner = summary["products"][0], summary["owners"][0]
+    assert all(d["product"] == product for d in get("/deals/at-risk?product=" + urllib.parse.quote(product))[1]["deals"])
+    assert all(d["owner"] == owner for d in get("/deals/at-risk?owner=" + urllib.parse.quote(owner))[1]["deals"])
+    deal_id = first[0]["deal_id"]
+    assert [d["deal_id"] for d in get(f"/deals/at-risk?q={deal_id[:6].lower()}")[1]["deals"]][0] == deal_id
+    assert get("/deals/at-risk?q=" + urllib.parse.quote("%' OR 1=1"))[1]["total"] == 0
+    amounts = [d["amount"] for d in get("/deals/at-risk?sort=largest")[1]["deals"]]
+    assert amounts == sorted(amounts, reverse=True)
+    scores = [d["score"] for d in get("/deals/at-risk?sort=safest")[1]["deals"]]
+    assert scores == sorted(scores, reverse=True)
+    drops = get("/deals/at-risk?sort=biggest_drop&limit=20")[1]["deals"]
+    changes = [d["score"] - (d["previous_score"] if d["previous_score"] is not None else d["score"]) for d in drops]
+    assert changes == sorted(changes)
+    print("ok: search, product, rep, sorting and pages work")
+
+
 def check_deal(latest):
     row = latest[latest["deal_closed"] == 0].iloc[0]
     status, deal = get(f"/deals/{row['deal_id']}")
@@ -100,6 +134,7 @@ def main():
     wait_until_scored()
     latest = sql(LATEST)
     check_at_risk(latest)
+    check_filters(latest)
     check_deal(latest)
     check_history(latest)
     check_events(latest)

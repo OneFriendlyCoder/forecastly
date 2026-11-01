@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS deal_health (
 CREATE TABLE IF NOT EXISTS deals (  -- the CRM record; events don't carry these fields
     deal_id text PRIMARY KEY,
     product text NOT NULL,
-    amount  double precision NOT NULL
+    amount  double precision NOT NULL,
+    owner   text NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS deal_scores (

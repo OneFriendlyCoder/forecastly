@@ -81,7 +81,6 @@ All 7 failures were timeouts, not bad answers. Every answer that came back passe
 ## Limits
 
 - **Slow:** answers took from under a minute to about 8 minutes, which is why it's a button and answers are saved. After 5 minutes, the agent stops and shows plain facts.
-- **Stale explanation on screen:** an open explanation stays visible if the score changes beside it. Reloading the page brings the button back.
 - **Late events:** saved answers are tied to the deal's latest event time, so a late event can change the score and still reuse the old answer.
 - **Rate limits:** the free tier is reported at about 40 requests a minute. The agent backs off and retries, but heavy use would still slow it down.
 - **Prompt injection:** deal data is passed to the model. The agent can only read and its tools can't change anything, but real CRM text would need more care.

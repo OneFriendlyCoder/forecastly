@@ -16,6 +16,11 @@ def check_bad_limits_are_rejected_before_any_query(client):
             assert "error" in response.json()
 
 
+def check_bad_filters_are_rejected(client):
+    for query in ("risk=extreme", "sort=random", "offset=-1"):
+        assert client.get(f"/deals/at-risk?{query}").status_code == 400, query
+
+
 def check_only_get_is_allowed(client):
     assert client.post("/deals/at-risk").status_code == 405
 
@@ -23,5 +28,6 @@ def check_only_get_is_allowed(client):
 if __name__ == "__main__":
     client = TestClient(app)  # lifespan doesn't run, so the pool stays closed
     check_bad_limits_are_rejected_before_any_query(client)
+    check_bad_filters_are_rejected(client)
     check_only_get_is_allowed(client)
     print("all api checks passed")

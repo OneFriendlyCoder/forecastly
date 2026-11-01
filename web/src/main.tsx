@@ -1,7 +1,8 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { AtRiskPage } from "./AtRiskPage";
 import { DealPage } from "./DealPage";
+import { readFilters } from "./filters";
+import { PipelinePage } from "./PipelinePage";
 import "./styles.css";
 
 function readDealId(hash: string) {
@@ -16,10 +17,7 @@ function readDealId(hash: string) {
 function App() {
   const [hash, setHash] = useState(location.hash);
   useEffect(() => {
-    const update = () => {
-      setHash(location.hash);
-      window.scrollTo(0, 0);
-    };
+    const update = () => setHash(location.hash);
     window.addEventListener("hashchange", update);
     return () => window.removeEventListener("hashchange", update);
   }, []);
@@ -28,8 +26,8 @@ function App() {
   return (
     <>
       <header><a href="#/">Pipeline Pulse</a></header>
-      <main>{dealId ? <DealPage key={dealId} id={dealId} /> : <AtRiskPage />}</main>
-      <footer>Demo: deal records are real sample data, and activity is simulated. Scores show what moved the model, not what caused a deal's trouble.</footer>
+      <main>{dealId ? <DealPage key={dealId} id={dealId} /> : <PipelinePage filters={readFilters(hash)} />}</main>
+      <footer>Demo: deal records are sample data, and activity is simulated.</footer>
     </>
   );
 }

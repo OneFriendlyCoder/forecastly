@@ -1,26 +1,45 @@
 export type Factor = { feature: string; value: number | string | null; impact: number };
+export type Risk = "high" | "medium" | "low";
 
-export type AtRiskDeal = {
+export type DealRow = {
   deal_id: string;
   product: string;
   amount: number;
+  owner: string;
   score: number;
+  previous_score: number | null;
+  risk: Risk;
   as_of: string;
   factors: Factor[];
+};
+
+export type RiskTotal = { deals: number; amount: number };
+
+export type Summary = {
+  open_deals: number;
+  scored_deals: number;
+  high: RiskTotal;
+  medium: RiskTotal;
+  low: RiskTotal;
+  products: string[];
+  owners: string[];
 };
 
 export type Deal = {
   deal_id: string;
   product: string;
   amount: number;
+  owner: string;
   closed: boolean;
   score: number | null;
+  risk: Risk | null;
   as_of: string | null;
   factors: Factor[] | null;
   activity: Record<string, number> | null;
 };
 
 export type ScorePoint = { as_of: string; score: number };
+export type DealEvent = { event_id: string; event_type: string; occurred_at: string; payload: Record<string, unknown> };
 
 export class NotFound extends Error {}
 
@@ -31,12 +50,19 @@ async function get<T>(path: string): Promise<T> {
   return response.json();
 }
 
-export const fetchAtRisk = () => get<{ deals: AtRiskDeal[] }>("/deals/at-risk").then((body) => body.deals);
+export async function fetchPipeline(query: string) {
+  const [summary, list] = await Promise.all([get<Summary>("/deals/summary"), get<{ total: number; deals: DealRow[] }>(`/deals/at-risk?${query}`)]);
+  return { summary, ...list };
+}
 
 export async function fetchDeal(id: string) {
   const path = `/deals/${encodeURIComponent(id)}`;
-  const [deal, history] = await Promise.all([get<Deal>(path), get<{ scores: ScorePoint[] }>(`${path}/scores?limit=1000`)]);
-  return { deal, scores: history.scores };
+  const [deal, history, recent] = await Promise.all([
+    get<Deal>(path),
+    get<{ scores: ScorePoint[] }>(`${path}/scores?limit=1000`),
+    get<{ events: DealEvent[] }>(`${path}/events?limit=12`),
+  ]);
+  return { deal, scores: history.scores, events: recent.events };
 }
 
 export type Explanation = {

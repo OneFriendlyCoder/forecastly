@@ -91,13 +91,20 @@ We replaced the Go `deal-state` service and API with Python, because the project
 | A run reported a 934-second delay inside a 404-second test | The numbers were impossible. The likely cause is the Mac sleeping, which pauses the test's timer | Rerun under `caffeinate`, and discard those figures |
 | FastAPI returns 422 for a bad limit, but our API promises 400 | Comparing it with the existing tests | Convert validation errors to the same 400 response |
 
+## Dashboard revamp
+
+| Problem | How it was found | Fix |
+|---|---|---|
+| Every deal looked high risk, because the page showed only the 50 riskiest with no explanation | A question from the project owner | Add risk cards with real counts, filters and pages, so all open deals can be reached |
+| Clearing filters could undo itself, because browsers report address changes late and a quick next action used the old filters | A browser test failed, and its page snapshot still showed the cleared search | Apply filter changes immediately, without waiting for the browser's event |
+| An open explanation could stay beside a newer score | Reviewing what happens when new information arrives | Reset the explanation when the score changes |
+| An API test could pass with no rows at all, because "all rows match" is true of an empty list | Reviewing the rep filter while debugging | Risk filters now check exact counts. The rep and product checks are still weak in this way |
+
 ## Open issues
 
 These are known and not fixed yet:
 
 - Three Python consumers ran slower than one, and the 3-consumer and burst load tests didn't finish.
-- The at-risk page shows only the 50 riskiest deals without saying so, which makes every deal look high risk.
-- An open explanation can stay on screen after the score changes.
 - A late event can change a score and still reuse the saved explanation.
 - 33 of 43 next steps came from just two playbook sections.
 

@@ -17,8 +17,9 @@ export function Explain({ id }: { id: string }) {
 
   if (state.status !== "done") {
     return (
-      <section className="card wide explain">
+      <section className="card explain">
         <h2>AI explanation</h2>
+        <p className="note">Get a fact-checked summary and one next step.</p>
         {state.status === "failed" ? <p role="alert">The agent couldn't be reached. Please try again.</p> : null}
         <button onClick={run} disabled={state.status === "loading"}>
           {state.status === "loading" ? "Explaining… this can take a minute" : "Explain this deal"}
@@ -29,7 +30,7 @@ export function Explain({ id }: { id: string }) {
 
   const { grounded, answer } = state.result;
   return (
-    <section className="card wide explain">
+    <section className="card explain">
       <h2>AI explanation</h2>
       {grounded ? null : <p role="alert">A fact-checked explanation wasn't available, so these are the plain facts.</p>}
       <p>{answer.summary}</p>

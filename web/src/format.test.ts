@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { formatDate, formatMoney, formatScore, impactText, reasonText, riskLevel } from "./format";
+import { eventText, formatChange, formatDate, formatMoney, formatScore, impactText, reasonText } from "./format";
 
 const reason = (feature: string, value: number | string | null) => reasonText({ feature, value, impact: 0 });
 
@@ -32,8 +32,19 @@ test("scores, money and dates are formatted", () => {
   expect(formatDate("2017-12-30T23:59:25+00:00")).toBe("Dec 30, 2017");
 });
 
-test("risk levels change at their cut-offs", () => {
-  expect(riskLevel(0.39).level).toBe("high");
-  expect(riskLevel(0.4).level).toBe("medium");
-  expect(riskLevel(0.6).level).toBe("low");
+test("score changes read as points", () => {
+  expect(formatChange(0.5, 0.62)).toBe("▼ 12 pts");
+  expect(formatChange(0.62, 0.5)).toBe("▲ 12 pts");
+  expect(formatChange(0.5, 0.5)).toBe("No change");
+  expect(formatChange(0.5, null)).toBe("New");
+});
+
+test("events read as plain sentences", () => {
+  const text = (event_type: string, payload: Record<string, unknown>) => eventText({ event_id: "1", event_type, occurred_at: "", payload });
+  expect(text("email_replied", { sentiment: "negative" })).toBe("Buyer replied (negative)");
+  expect(text("meeting_held", { meeting_type: "demo" })).toBe("Demo meeting held");
+  expect(text("meeting_no_show", { meeting_type: "pricing" })).toBe("Buyer missed the pricing meeting");
+  expect(text("contact_added", { role: "economic_buyer" })).toBe("New contact added: economic buyer");
+  expect(text("close_date_changed", { old: "2017-03-01", new: "2017-04-02" })).toBe("Close date moved from Mar 1, 2017 to Apr 2, 2017");
+  expect(text("something_new", {})).toBe("something_new");
 });

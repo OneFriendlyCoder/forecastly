@@ -2,6 +2,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from enum import Enum
 
 import psycopg
 from fastapi import FastAPI, Query, Request
@@ -20,24 +21,80 @@ LATEST_SCORE = """
     FROM deal_scores s WHERE s.deal_id = d.deal_id
     ORDER BY s.as_of DESC, s.scored_at DESC LIMIT 1"""
 
-# Postgres builds each JSON response, so the columns live in one place.
-AT_RISK_SQL = f"""
-SELECT json_build_object('deals', coalesce(json_agg(t ORDER BY t.score, t.deal_id), '[]'))::text
-FROM (
-    SELECT d.deal_id, d.product, d.amount, s.score, s.as_of, s.model_version, s.factors
+# The one place the risk cut-offs live. They're simple guesses, not fitted values.
+RISK_LEVEL = "CASE WHEN {score} < 0.4 THEN 'high' WHEN {score} < 0.6 THEN 'medium' ELSE 'low' END"
+
+OPEN_DEALS = f"""
+    SELECT d.deal_id, d.product, d.amount, d.owner, s.score, s.as_of, s.model_version, s.factors,
+           p.score AS previous_score, {RISK_LEVEL.format(score="s.score")} AS risk
     FROM deal_health h
     JOIN deals d USING (deal_id)
     CROSS JOIN LATERAL ({LATEST_SCORE}) s
-    WHERE h.deal_closed = 0
-    ORDER BY s.score, d.deal_id
-    LIMIT %s
-) t"""
+    LEFT JOIN LATERAL (
+        SELECT s2.score FROM deal_scores s2 WHERE s2.deal_id = d.deal_id
+        ORDER BY s2.as_of DESC, s2.scored_at DESC OFFSET 1 LIMIT 1
+    ) p ON true
+    WHERE h.deal_closed = 0"""
+
+
+class Risk(str, Enum):
+    high = "high"
+    medium = "medium"
+    low = "low"
+
+
+class Sort(str, Enum):
+    riskiest = "riskiest"
+    safest = "safest"
+    largest = "largest"
+    biggest_drop = "biggest_drop"
+
+
+ORDER_BY = {  # fixed text, chosen by the validated Sort value
+    Sort.riskiest: "score, deal_id",
+    Sort.safest: "score DESC, deal_id",
+    Sort.largest: "amount DESC, score, deal_id",
+    Sort.biggest_drop: "coalesce(score - previous_score, 0), score, deal_id",
+}
+
+# Postgres builds each JSON response, so the columns live in one place.
+AT_RISK_SQL = f"""
+WITH filtered AS (
+    SELECT * FROM ({OPEN_DEALS}) o
+    WHERE (%(risk)s::text IS NULL OR risk = %(risk)s)
+      AND (%(product)s::text IS NULL OR product = %(product)s)
+      AND (%(owner)s::text IS NULL OR owner = %(owner)s)
+      AND (%(q)s::text IS NULL OR position(upper(%(q)s) IN upper(deal_id)) > 0)
+)
+SELECT json_build_object(
+    'total', (SELECT count(*) FROM filtered),
+    'deals', (
+        SELECT coalesce(json_agg(t ORDER BY t.position), '[]')
+        FROM (
+            SELECT *, row_number() OVER (ORDER BY {{order}}) AS position
+            FROM filtered ORDER BY position LIMIT %(limit)s OFFSET %(offset)s
+        ) t
+    )
+)::text"""
+
+SUMMARY_SQL = f"""
+WITH o AS ({OPEN_DEALS})
+SELECT json_build_object(
+    'open_deals', (SELECT count(*) FROM deal_health WHERE deal_closed = 0),
+    'scored_deals', (SELECT count(*) FROM o),
+    'high', (SELECT json_build_object('deals', count(*), 'amount', coalesce(sum(amount), 0)) FROM o WHERE risk = 'high'),
+    'medium', (SELECT json_build_object('deals', count(*), 'amount', coalesce(sum(amount), 0)) FROM o WHERE risk = 'medium'),
+    'low', (SELECT json_build_object('deals', count(*), 'amount', coalesce(sum(amount), 0)) FROM o WHERE risk = 'low'),
+    'products', (SELECT coalesce(json_agg(DISTINCT product), '[]') FROM o),
+    'owners', (SELECT coalesce(json_agg(DISTINCT owner), '[]') FROM o)
+)::text"""
 
 DEAL_SQL = f"""
 SELECT row_to_json(t)::text
 FROM (
-    SELECT d.deal_id, d.product, d.amount, coalesce(h.deal_closed > 0, false) AS closed, h.last_event_at,
+    SELECT d.deal_id, d.product, d.amount, d.owner, coalesce(h.deal_closed > 0, false) AS closed, h.last_event_at,
            s.score, s.as_of, s.model_version, s.factors, s.features,
+           CASE WHEN s.score IS NOT NULL THEN {RISK_LEVEL.format(score="s.score")} END AS risk,
            to_jsonb(h) - 'deal_id' - 'last_event_at' - 'last_event_id' - 'updated_at' AS activity
     FROM deals d
     LEFT JOIN deal_health h USING (deal_id)
@@ -89,7 +146,7 @@ def error(status, message):
 
 @app.exception_handler(RequestValidationError)
 async def bad_request(_request: Request, _error: RequestValidationError):
-    return error(400, f"limit must be from 1 to {MAX_LIMIT}")
+    return error(400, f"bad query value: limit must be from 1 to {MAX_LIMIT}, and filters must use listed values")
 
 
 @app.exception_handler(psycopg.Error)
@@ -118,9 +175,18 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/deals/summary")
+def summary():
+    return respond(SUMMARY_SQL, None)
+
+
 @app.get("/deals/at-risk")
-def at_risk(limit: int = Limit):
-    return respond(AT_RISK_SQL, (limit,))
+def at_risk(limit: int = Limit, offset: int = Query(0, ge=0), risk: Risk | None = None,
+            product: str | None = None, owner: str | None = None, q: str | None = None,
+            sort: Sort = Sort.riskiest):
+    return respond(AT_RISK_SQL.format(order=ORDER_BY[sort]), {
+        "limit": limit, "offset": offset, "risk": risk.value if risk else None,
+        "product": product, "owner": owner, "q": q or None})
 
 
 @app.get("/deals/{deal_id}")

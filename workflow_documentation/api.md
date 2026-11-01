@@ -7,12 +7,15 @@
 | Endpoint | Returns |
 |---|---|
 | `GET /health` | `{"status":"ok"}`, or 503 if Postgres can't be reached |
-| `GET /deals/at-risk` | Open deals with the lowest latest score first, with product, amount and top 3 reasons |
+| `GET /deals/summary` | Open deal totals, the count and amount per risk level, and the lists of products and reps |
+| `GET /deals/at-risk` | Open deals with the riskiest first, with `total`, rep, risk level, previous score and top 3 reasons |
 | `GET /deals/{id}` | One deal's latest score, reasons, features and activity counts |
 | `GET /deals/{id}/scores` | The deal's newest scores, oldest first, for a trend chart |
 | `GET /deals/{id}/events` | The deal's newest events, newest first, for the agent |
 
 `at-risk`, `scores` and `events` take `?limit=`, a whole number from 1 to 1000. The default is 50.
+
+`at-risk` also takes `offset`, `risk` (`high`, `medium` or `low`), `product`, `owner`, `q` (part of a deal ID) and `sort` (`riskiest`, `safest`, `largest` or `biggest_drop`).
 
 - **Deals with no score:** a deal in the `deals` table with no activity returns 200, with `score` and `activity` set to `null`.
 - **Closed deals:** they keep their detail and history but never appear in `at-risk`.

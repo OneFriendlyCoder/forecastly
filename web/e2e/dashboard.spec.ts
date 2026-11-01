@@ -5,16 +5,17 @@ const API = "http://localhost:8080";
 const pct = (score: number) => `${Math.round(score * 100)}%`;
 
 test("the at-risk list leads to a matching deal page", async ({ page, request }) => {
-  const { deals } = await (await request.get(`${API}/deals/at-risk`)).json();
+  const { deals } = await (await request.get(`${API}/deals/at-risk?limit=25`)).json();
   const top = deals[0];
 
   await page.goto("/");
-  await expect(page.getByRole("row")).toHaveCount(deals.length + 1);
+  await expect(page.getByRole("row")).toHaveCount(26);
   await expect(page.getByRole("row").nth(1)).toContainText(top.deal_id);
   await expect(page.getByRole("row").nth(1)).toContainText(pct(top.score));
 
-  await page.getByRole("row").nth(1).getByRole("cell").nth(1).click();
+  await page.getByRole("row").nth(1).getByRole("cell").nth(4).click();
   await expect(page).toHaveURL(new RegExp(`#/deals/${top.deal_id}$`));
+  await expect(page.locator(".timeline li").first()).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(top.deal_id);
   await expect(page.getByTestId("score")).toHaveText(pct(top.score));
   await expect(page.getByRole("img", { name: /Win chance over time/ }).locator("svg path.recharts-line-curve")).toHaveCount(1);
@@ -22,6 +23,48 @@ test("the at-risk list leads to a matching deal page", async ({ page, request })
   await page.getByText("Show scores as a table").click();
   const { scores } = await (await request.get(`${API}/deals/${top.deal_id}/scores?limit=1000`)).json();
   await expect(page.locator(".chart-table tbody tr")).toHaveCount(scores.length);
+});
+
+test("risk cards filter the list, and the filter survives a visit to a deal", async ({ page, request }) => {
+  const summary = await (await request.get(`${API}/deals/summary`)).json();
+  await page.goto("/");
+  await page.getByRole("button", { name: /Medium risk/ }).click();
+  await expect(page).toHaveURL(/risk=medium/);
+  await expect(page.locator(".pager")).toContainText(`of ${summary.medium.deals.toLocaleString("en-US")} deals`);
+  await expect(page.locator("tbody .risk-medium")).toHaveCount(25);
+  await expect(page.locator("tbody .risk-high")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Next" }).click();
+  await expect(page).toHaveURL(/page=2/);
+  await expect(page.locator(".pager")).toContainText("Showing 26–50");
+
+  await page.locator("tbody a").first().click();
+  await page.getByRole("button", { name: /Back to pipeline/ }).click();
+  await expect(page).toHaveURL(/risk=medium.*page=2/);
+  await expect(page.getByRole("button", { name: /Medium risk/ })).toHaveAttribute("aria-pressed", "true");
+
+  await page.getByRole("button", { name: /Low risk/ }).click();
+  await expect(page.locator("tbody .risk-medium")).toHaveCount(0);
+  await expect(page.locator(".pager")).toContainText("Showing 1–25");
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(page.locator("tbody .risk-high").first()).toBeVisible();
+});
+
+test("search, rep and sort work together", async ({ page, request }) => {
+  const summary = await (await request.get(`${API}/deals/summary`)).json();
+  const { deals } = await (await request.get(`${API}/deals/at-risk?limit=1`)).json();
+  await page.goto("/");
+  await page.getByPlaceholder("Deal ID").fill(deals[0].deal_id.toLowerCase());
+  await expect(page.locator("tbody tr")).toHaveCount(1);
+  await page.getByPlaceholder("Deal ID").fill("no-such-deal");
+  await expect(page.getByText("No deals match these filters")).toBeVisible();
+  await page.getByRole("button", { name: "Clear filters" }).click();
+
+  await page.getByLabel("Rep").selectOption(summary.owners[0]);
+  await expect(page.locator("tbody tr").first()).toContainText(summary.owners[0]);
+  await page.getByLabel("Sort by").selectOption("largest");
+  const first = (await (await request.get(`${API}/deals/at-risk?sort=largest&limit=1&owner=${encodeURIComponent(summary.owners[0])}`)).json()).deals[0];
+  await expect(page.locator("tbody tr").first()).toContainText(first.deal_id);
 });
 
 test("an unknown deal says so", async ({ page }) => {
@@ -44,9 +87,9 @@ test("the chart shows a value on hover", async ({ page, request }) => {
 test("the list shows loading, then an empty message", async ({ page }) => {
   let release = () => {};
   const held = new Promise<void>((resolve) => { release = resolve; });
-  await page.route("**/api/deals/at-risk", async (route) => {
+  await page.route("**/api/deals/at-risk*", async (route) => {
     await held;
-    await route.fulfill({ json: { deals: [] } });
+    await route.fulfill({ json: { deals: [], total: 0 } });
   });
   await page.goto("/");
   await expect(page.getByText("Loading deals")).toBeVisible();
