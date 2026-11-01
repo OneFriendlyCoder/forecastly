@@ -25,7 +25,7 @@ def chunks():
 def main():
     llm, rows = LLM.from_env(), list(chunks())
     try:
-        vectors = llm.embed([f"{guide}: {title}\n{body}" for _, guide, title, body in rows])
+        vectors = llm.embed([f"{guide}: {title}\n{body}" for _, guide, title, body in rows], "passage")
     except LLMError as error:
         sys.exit(f"playbook not indexed: {error}")
     with psycopg.connect(Tools(llm).database_url) as db:

@@ -53,7 +53,7 @@ class Tools:
         return self._get(f"/deals/{urllib.parse.quote(deal_id, safe='')}/events?limit={int(limit)}")["events"]
 
     def search_playbook(self, query):
-        vector = self.llm.embed([query])[0]
+        vector = self.llm.embed([query], "query")[0]
         with psycopg.connect(self.database_url) as db:
             rows = db.execute(SEARCH, (str(vector),)).fetchall()
         return [dict(zip(("chunk_id", "guide", "title", "body"), row)) for row in rows]

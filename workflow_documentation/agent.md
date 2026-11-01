@@ -78,6 +78,8 @@ All 7 failures were timeouts, not bad answers. Every answer that came back passe
 
 **Advice is repetitive.** 33 of the 43 next steps came from just two playbook sections, so the checks don't show that the advice is varied or well matched.
 
+**These 50-case results predate the search fix.** Search was finding the right guide for only 4 of 10 known questions at the time, so they don't describe the current agent. A later 5-deal sample gave 3 grounded answers, 1 plain facts answer, and 1 failure from restarting the agent during the run. Answers took about 3 to 5 minutes. All 3 grounded answers used the same playbook section, which is too small a sample to judge variety.
+
 ## Limits
 
 - **Slow:** answers took from under a minute to about 8 minutes, which is why it's a button and answers are saved. After 5 minutes, the agent stops and shows plain facts.

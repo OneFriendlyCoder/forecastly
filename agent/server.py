@@ -8,7 +8,7 @@ from mcp.server.mcpserver import MCPServer
 from starlette.concurrency import run_in_threadpool
 from starlette.responses import JSONResponse
 
-from agent import explain
+from agent import cache_key, explain
 from llm import LLM
 from tools import DealNotFound, Tools
 
@@ -17,10 +17,10 @@ tools = Tools(llm)
 mcp = MCPServer("pipeline-pulse", instructions="Read deal risk scores, activity and sales playbook advice.")
 
 FIND = """SELECT answer, grounded, latency_ms FROM deal_explanations
-WHERE deal_id = %s AND as_of = %s AND model_version = %s AND llm_model = %s"""
-SAVE = """INSERT INTO deal_explanations (deal_id, as_of, model_version, llm_model, answer, grounded, latency_ms)
-VALUES (%s, %s, %s, %s, %s, %s, %s)
-ON CONFLICT (deal_id, as_of, model_version, llm_model) DO UPDATE SET
+WHERE deal_id = %s AND as_of = %s AND model_version = %s AND llm_model = %s AND score = %s"""
+SAVE = """INSERT INTO deal_explanations (deal_id, as_of, model_version, llm_model, score, answer, grounded, latency_ms)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+ON CONFLICT (deal_id, as_of, model_version, llm_model, score) DO UPDATE SET
     answer = EXCLUDED.answer, grounded = EXCLUDED.grounded, latency_ms = EXCLUDED.latency_ms"""
 
 
@@ -29,7 +29,7 @@ def explain_deal_cached(deal_id, fresh=False):
     deal = tools.get_deal(deal_id)
     if deal["score"] is None:
         return None
-    key = (deal_id, deal["as_of"], deal["model_version"], llm.model)
+    key = cache_key(deal, llm.model)
     with psycopg.connect(tools.database_url) as db:
         row = None if fresh else db.execute(FIND, key).fetchone()
         if row:

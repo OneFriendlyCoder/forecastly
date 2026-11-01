@@ -62,9 +62,10 @@ CREATE TABLE IF NOT EXISTS deal_explanations (
     as_of         timestamptz NOT NULL,
     model_version text NOT NULL,
     llm_model     text NOT NULL,
+    score         double precision NOT NULL,
     answer        jsonb NOT NULL,
     grounded      boolean NOT NULL,
     latency_ms    int NOT NULL,
     created_at    timestamptz NOT NULL DEFAULT now(),
-    PRIMARY KEY (deal_id, as_of, model_version, llm_model)  -- a new score means a new explanation
+    PRIMARY KEY (deal_id, as_of, model_version, llm_model, score)  -- a new score means a new explanation
 );

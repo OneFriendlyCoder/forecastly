@@ -100,13 +100,27 @@ We replaced the Go `deal-state` service and API with Python, because the project
 | An open explanation could stay beside a newer score | Reviewing what happens when new information arrives | Reset the explanation when the score changes |
 | An API test could pass with no rows at all, because "all rows match" is true of an empty list | Reviewing the rep filter while debugging | Risk filters now check exact counts. The rep and product checks are still weak in this way |
 
+## Agent search, cache and timeouts
+
+| Problem | How it was found | Fix |
+|---|---|---|
+| Playbook search found the right guide for only 4 of 10 known questions. The embedding model needs `input_type` to tell questions from documents, and leaving it out gave no error | Investigating why two sections dominated the advice, then scoring options against questions with known answers | Send `query` or `passage` on every call, which scored 10 of 10. The live test now checks these questions |
+| A late event could change a score and still reuse the old explanation, because saved answers were tied only to the deal's latest event time | Reviewing what happens when new information arrives | Include the score in the saved answer's key. Unit tested, not yet seen live |
+| The dashboard showed "The agent couldn't be reached" for slow answers. nginx gave up at 3 minutes, but the agent can take 5 | Reading the settings while checking if deals can run at the same time. Evaluations missed it because they skip nginx | Raise nginx's limit to 330 seconds. The setting is confirmed live, but the button hasn't been tested on a slow deal |
+| The guard rejected "10", most likely from "the last 10 events", which forced slow retries | Rejections recorded in the 5-deal sample | Allow the events limit as a known number |
+| The live agent test gave up at 300 seconds, the same moment as the agent's own limit | The test timed out with no answer | Wait 360 seconds |
+| One 5-deal sample case failed with a dropped connection | The agent had restarted. Rebuilding the web container during the run restarted it | Caused by our own rebuild, so don't rebuild services during an evaluation |
+
 ## Open issues
 
 These are known and not fixed yet:
 
 - Three Python consumers ran slower than one, and the 3-consumer and burst load tests didn't finish.
 - A late event can change a score and still reuse the saved explanation.
-- 33 of 43 next steps came from just two playbook sections.
+- Advice may still be repetitive. All 3 grounded answers in a 5-deal sample after the search fix used the same section, which is too small a sample to judge.
+- Agent speed. The 5-deal sample took about 3 to 5 minutes per answer. The cause, model or free tier, isn't settled.
+- The same deal clicked twice runs the whole agent twice.
+- The live agent test hasn't passed since these fixes.
 
 ## Lessons
 

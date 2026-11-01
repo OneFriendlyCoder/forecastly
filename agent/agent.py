@@ -14,7 +14,8 @@ WINDOW_DAYS = 14.0  # the features' "last 14 days"
 
 SYSTEM = """Think briefly, then answer. You explain to a sales rep why a deal has a low chance of winning, and suggest one next step.
 
-Use get_recent_events to see what happened. Use search_playbook to find advice, and base the next step on it.
+Use get_recent_events to see what happened. Use search_playbook to find advice for the deal's own largest factors, and
+base the next step on the section that fits this deal best.
 Only state facts that appear in the data you were given. Never invent numbers, names or events.
 Don't quote calendar dates or work out new numbers. Use the day counts already in the features.
 The factors show what moved a statistical model's score. Don't say what caused the deal's trouble, and never use the
@@ -53,7 +54,7 @@ def walk_numbers(value):
 
 def known_numbers(deal, sources):
     """Every number the agent has seen, as written and rounded, as a person would quote it."""
-    seen = {*walk_numbers(deal), *walk_numbers(sources), WINDOW_DAYS}
+    seen = {*walk_numbers(deal), *walk_numbers(sources), WINDOW_DAYS, float(EVENTS_SHOWN)}  # "the last 10 events" is true
     if deal.get("score") is not None:
         seen.add(float(round(deal["score"] * 100)))
     return seen | {round(n, 1) for n in seen} | {float(round(n)) for n in seen}
@@ -131,6 +132,11 @@ def run_tool(call, tools):
         raise
     except Exception as error:  # a broken tool is reported to the model, never to the reader
         return {"error": f"tool failed: {type(error).__name__}"}
+
+
+def cache_key(deal, llm_model):
+    """Includes the score, because a late event can change it without changing the deal's latest event time."""
+    return deal["deal_id"], deal["as_of"], deal["model_version"], llm_model, deal["score"]
 
 
 def explain(deal, llm, tools):

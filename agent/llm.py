@@ -57,8 +57,10 @@ class LLM:
         except (KeyError, IndexError, TypeError) as error:
             raise LLMError("provider sent an unexpected reply") from error
 
-    def embed(self, texts):
-        response = self._post("/embeddings", {"model": self.embed_model, "input": texts, "encoding_format": "float"})
+    def embed(self, texts, input_type):
+        """input_type is "query" or "passage". Leaving it out gives no error, only poor search results."""
+        response = self._post("/embeddings", {"model": self.embed_model, "input": texts, "input_type": input_type,
+                                              "encoding_format": "float"})
         try:
             return [item["embedding"] for item in response["data"]]
         except (KeyError, TypeError) as error:

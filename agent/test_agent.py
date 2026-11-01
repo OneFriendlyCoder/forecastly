@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).parent))
-from agent import compact_event, explain, guard, known_numbers, parse
+from agent import cache_key, compact_event, explain, guard, known_numbers, parse
 from llm import LLM, LLMError
 
 CHUNK = {"chunk_id": "negative-replies#move", "guide": "Negative replies", "title": "Move", "body": "Offer a ten minute call."}
@@ -189,6 +189,22 @@ def check_a_broken_tool_doesnt_crash():
     assert "tool failed" in llm.calls[1][-1]["content"]
 
 
+def check_a_new_score_needs_a_new_answer():
+    deal = {**DEAL, "as_of": "2017-12-30", "model_version": "m1"}
+    assert cache_key(deal, "llm") == cache_key(dict(deal), "llm")
+    assert cache_key(deal, "llm") != cache_key({**deal, "score": 0.3}, "llm"), "a late event can change only the score"
+
+
+def check_embeddings_say_what_they_are():
+    sent = []
+    llm = LLM("http://x", "key", "m", "e")
+    llm._post = lambda path, body: sent.append(body) or {"data": [{"embedding": [1.0]}]}
+    llm.embed(["text"], "query")
+    assert sent[0]["input_type"] == "query", "without this the model searches badly and gives no error"
+    index_source = (Path(__file__).parent / "index_playbook.py").read_text()
+    assert '"passage"' in index_source, "documents must be embedded as passages"
+
+
 def check_parse_tolerates_wrapping():
     assert parse('Here you go:\n```json\n{"a": 1}\n```') == {"a": 1}
     assert parse("nothing") is None and parse(None) is None
@@ -226,6 +242,8 @@ def main():
     check_bad_tool_input_doesnt_crash()
     check_events_are_compacted()
     check_dropped_connections_are_retried()
+    check_a_new_score_needs_a_new_answer()
+    check_embeddings_say_what_they_are()
     check_the_time_limit_stops_retries()
     check_a_broken_tool_doesnt_crash()
     check_parse_tolerates_wrapping()

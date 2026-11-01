@@ -16,13 +16,25 @@ from replay import load_events, replay
 from test_e2e import BROKERS, sql, wait_until_scored
 
 AGENT = "http://localhost:8090"
+SEARCHES = {  # a real embedding setting bug once scored 4 of 10 here, with no error
+    "negative replies from the buyer": "negative-replies",
+    "buyer has gone silent, no reply for weeks": "reengage-silent-deals",
+    "close date keeps moving": "close-date-hygiene",
+    "buyer missed a meeting, no-show": "missed-meetings",
+    "buyers are replying slowly": "slow-reply-times",
+    "only one buyer is involved": "multithread-the-account",
+    "many emails sent with few replies": "too-many-emails",
+    "pricing objection": "pricing-objections",
+    "deal stalled at late stage": "stalled-late-stage",
+    "should we keep this deal open": "qualify-or-close",
+}
 TOOLS = {"list_at_risk_deals", "get_deal", "get_recent_events", "search_playbook", "explain_deal"}
 
 
 def post(path):
     request = urllib.request.Request(AGENT + path, method="POST")
     try:
-        with urllib.request.urlopen(request, timeout=300) as response:
+        with urllib.request.urlopen(request, timeout=360) as response:
             return response.status, json.load(response)
     except urllib.error.HTTPError as error:
         return error.code, json.load(error)
@@ -60,8 +72,12 @@ async def check_mcp(deal_id):
         assert TOOLS <= names, names
         result = await client.call_tool("get_deal", {"deal_id": deal_id})
         assert deal_id in str(result.content)
-        found = await client.call_tool("search_playbook", {"query": "buyer stopped replying"})
-        assert "silent" in str(found.content).lower(), "the search should find the silent deals guide"
+        hits = 0
+        for query, guide in SEARCHES.items():
+            found = await client.call_tool("search_playbook", {"query": query})
+            hits += guide in str(found.content)
+        assert hits >= 9, f"playbook search found {hits} of {len(SEARCHES)} expected guides"
+        print(f"ok: playbook search found {hits} of {len(SEARCHES)} expected guides")
     print(f"ok: an MCP client sees {len(names)} tools and can call them")
 
 
