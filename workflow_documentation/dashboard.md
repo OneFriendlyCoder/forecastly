@@ -20,7 +20,7 @@ Filters are kept in the address, so reloading, sharing a link and the back butto
 
 ## Branding and themes
 
-The dashboard is named Forecastly and is marked as a demo for Outreach, using their logo from outreach.ai. The code, containers and these docs still use the working name Pipeline Pulse. Light mode is the default, and the button in the header switches to dark mode and remembers the choice.
+The dashboard is named Forecastly and is marked as a demo for Outreach AI, in plain text with no logo. The code, containers and these docs still use the working name Pipeline Pulse. Light mode is the default, and the button in the header switches to dark mode and remembers the choice.
 
 ## Live strip
 

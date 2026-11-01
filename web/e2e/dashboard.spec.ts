@@ -133,7 +133,7 @@ test("the header shows the brand, and the theme choice survives a reload", async
   await page.goto("/");
   await expect(page).toHaveTitle("Forecastly");
   await expect(page.getByRole("link", { name: "Forecastly" })).toBeVisible();
-  await expect(page.getByAltText("Outreach")).toBeVisible();
+  await expect(page.getByText("Demo for Outreach AI")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.getByRole("button", { name: "Dark mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

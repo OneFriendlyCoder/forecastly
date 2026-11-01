@@ -51,8 +51,7 @@ header { display: flex; justify-content: space-between; align-items: center; gap
 .brand { color: var(--text); font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none; }
 .header-side { display: flex; align-items: center; gap: 16px; }
 .theme-toggle { padding: 5px 10px; background: none; border: 1px solid var(--grid); border-radius: 6px; font-size: 13px; cursor: pointer; }
-.demo-for { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 13px; white-space: nowrap; }
-.demo-for img { display: block; height: 42px; padding: 4px 8px; background: #fff; border-radius: 6px; } /* the logo's text is near-black, so it stays on white in both themes */
+.demo-for { color: var(--text-secondary); font-size: 13px; font-weight: 600; white-space: nowrap; }
 
 main { max-width: 1240px; margin: 0 auto; padding: 24px; }
 
