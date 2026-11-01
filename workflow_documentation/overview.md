@@ -87,8 +87,8 @@ These come from a laptop in Docker. See [deal_state.md](deal_state.md) and [scor
 |---|---|
 | Events simulated | 439,821 across 8,300 deals |
 | Clean-vs-faults proof | Final state identical with about 18,000 injected faults and 3 forced kills |
-| Target rate of 1M events/hour | Handled with no backlog, p95 of 0.237 s from event to score |
-| Maximum throughput with scoring | 7,597 events/s with 1 consumer, 10,824 with 3, on the earlier Go version. Not yet remeasured on Python |
+| Target rate of 1M events/hour | Handled with no backlog, p95 of 0.431 s from event to score |
+| Maximum throughput with scoring | 2,866 events/s with 1 consumer. 3 consumers were slower, and the burst test wasn't run |
 
 ## Changes from the original plan
 

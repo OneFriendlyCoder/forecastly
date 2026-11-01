@@ -48,18 +48,20 @@ The test compares open deals only. Which moment a closed deal was last scored de
 
 ## Speed
 
-These are from `make load-test`, on one laptop in Docker. **They were measured on the Go version of `deal-state`.** The Python version needs a new load test, and it should be slower: a first replay took 124 seconds, or about 3,500 events/s. Full figures are in `data/load_test_results.json`.
+These are from `make load-test` on the Python `deal-state` service, on one laptop in Docker. Full figures are in `data/load_test_results.json`.
 
-| Scenario | Consumers | Throughput | p95 event to score |
-|---|---|---|---|
-| Target rate (1M events/hour) | 1 | 278/s, the rate requested | 0.237 s |
-| As fast as possible | 1 | 7,597/s | 153 s |
-| As fast as possible | 3 | 10,824/s | 112 s |
-| Burst | 1 | Not a limit test | 50 s |
+| Scenario | Consumers | Throughput | p95 event to score | Python result |
+|---|---|---|---|---|
+| Target rate (1M events/hour) | 1 | 276/s, close to the rate requested | 0.431 s | Finished, with a peak backlog of 28 |
+| As fast as possible | 1 | 2,866/s | 426 s | Finished |
+| As fast as possible | 3 | About 1,230/s | Not measured | Stopped at the 15-minute limit |
+| Burst | 1 | Not measured | Not measured | Not run |
 
-The plan's under-2-second target is met at the target rate, with a worst case of 0.374 s. In the other runs, the latency is mostly time waiting in the backlog.
+The plan's under-2-second target is met at the target rate, with a worst case of 0.541 s. In the full-speed run, the latency is mostly time waiting in the backlog.
 
-Calculating features cost a lot of throughput. It fell from 11,888/s to 7,597/s with one consumer, and from 24,199/s to 10,824/s with three. The plan's target rate is still far below these numbers.
+One consumer handles about 10 million events an hour, which is about 10 times the target, and `deal-state` used 93% of a CPU in that run. Python is much slower than the earlier Go version, which reached 7,597/s with one consumer and 10,824/s with three.
+
+**Adding consumers made it slower.** Three consumers were slower than one, even with work spread evenly and no events lost. In one sample, the scorer used 255% CPU and Postgres 181%, so the likely cause is the laptop running out of CPU. That's a lead, not proof. Until it's explained, don't count on adding consumers to go faster.
 
 ## Limits
 

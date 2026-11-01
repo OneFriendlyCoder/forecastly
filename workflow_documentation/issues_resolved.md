@@ -87,12 +87,16 @@ We replaced the Go `deal-state` service and API with Python, because the project
 | Problem | How it was found | Fix |
 |---|---|---|
 | Python's JSON reader accepts `Infinity`, huge numbers and broken text that Postgres refuses, so one bad message could have stopped the consumer | Reviewing what the Go parser rejected, before porting it | Reject them in `parse_event`, so they go to the dead-letter topic, and test each case |
+| The load test stopped with 12,000 of 1,319,463 events stored, while the service was still working | The test's final count check. We didn't find out why the backlog read 0 | End a run on the exact stored count, not the backlog number |
+| A run reported a 934-second delay inside a 404-second test | The numbers were impossible. The likely cause is the Mac sleeping, which pauses the test's timer | Rerun under `caffeinate`, and discard those figures |
 | FastAPI returns 422 for a bad limit, but our API promises 400 | Comparing it with the existing tests | Convert validation errors to the same 400 response |
 
 ## Open issues
 
 These are known and not fixed yet:
 
+- Three Python consumers ran slower than one, and the 3-consumer and burst load tests didn't finish.
+- The at-risk page shows only the 50 riskiest deals without saying so, which makes every deal look high risk.
 - An open explanation can stay on screen after the score changes.
 - A late event can change a score and still reuse the saved explanation.
 - 33 of 43 next steps came from just two playbook sections.
