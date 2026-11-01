@@ -1,12 +1,7 @@
-FROM golang:1.26-alpine AS build
-WORKDIR /src
-COPY go.mod go.sum ./
-RUN go mod download
-COPY services/api services/api
-RUN CGO_ENABLED=0 go build -o /api ./services/api
-
-FROM alpine:3.22
-RUN adduser -D app
+FROM python:3.11-slim
+COPY services/api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN useradd app
 USER app
-COPY --from=build /api /api
-ENTRYPOINT ["/api"]
+COPY services/api/main.py .
+ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

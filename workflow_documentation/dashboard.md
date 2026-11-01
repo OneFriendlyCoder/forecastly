@@ -12,7 +12,7 @@
 - **Data:** the pages call the [API](api.md) and refresh every 5 seconds, so scores change on screen during a replay. If a refresh fails, the last data stays visible beside a warning.
 - **Reasons:** `src/format.ts` turns model features into plain sentences. They're labelled "What moved this score", because they explain the model and not the deal's actual problem.
 - **Risk levels:** under 40% is high, under 60% is medium, and anything else is lower. These cut-offs are simple guesses.
-- **Running it:** Docker builds the site and serves it with nginx, which passes `/api/` requests to the Go API. For development, run `npm run dev` in `web/`, with the API running.
+- **Running it:** Docker builds the site and serves it with nginx, which passes `/api/` requests to the API. For development, run `npm run dev` in `web/`, with the API running.
 
 Run `npm ci` in `web/` and `npx playwright install chromium` before running the tests.
 

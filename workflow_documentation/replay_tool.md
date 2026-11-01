@@ -3,7 +3,7 @@
 The replay tool plays saved simulator events into Kafka as if they were happening live. It stands in for real data sources such as a CRM, so the rest of the pipeline can run without any real customer data.
 
 ```text
-events.parquet -> replay.py -> Kafka (activity.events) -> Go deal-state service
+events.parquet -> replay.py -> Kafka (activity.events) -> deal-state service
 ```
 
 The tool only knows about Kafka, and readers only know about Kafka. A real source could replace it by writing to the same topic.

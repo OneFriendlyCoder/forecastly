@@ -1,6 +1,6 @@
 # API
 
-`services/api/` is a small read-only Go service. It lets the dashboard, and later the agent, read deals and scores without touching Postgres directly. It starts with `make up` and listens on `http://localhost:8080`.
+`services/api/` is a small read-only FastAPI service. It lets the dashboard, and later the agent, read deals and scores without touching Postgres directly. It starts with `make up` and listens on `http://localhost:8080`.
 
 ## Endpoints
 
@@ -16,16 +16,17 @@
 
 - **Deals with no score:** a deal in the `deals` table with no activity returns 200, with `score` and `activity` set to `null`.
 - **Closed deals:** they keep their detail and history but never appear in `at-risk`.
+- **Interactive docs:** FastAPI serves them at `http://localhost:8080/docs`.
 - **Errors:** an unknown deal gets 404, a bad limit gets 400, and database failures get 500 without internal details. Each error body is `{"error":"..."}`.
 - **Reasons:** a positive `impact` raises the chance of winning, and a negative one lowers it.
 
 ## How it works
 
-Postgres builds each JSON response, so Go only passes it through and the columns are defined in one place. All values reach the database as query parameters. Each query has a 5-second time limit.
+Postgres builds each JSON response, so Python only passes it through and the columns are defined in one place. All values reach the database as query parameters. Each query has a 5-second time limit.
 
 ## Tests
 
-- `go test ./...` checks bad limits and that only GET is allowed, with no database.
+- `make test` checks bad limits and that only GET is allowed, with no database.
 - `make test-api` replays every event through the real stack and wipes local data. It compares `at-risk`, deal detail and score history with Postgres, and checks closed deals, never-active deals, 404s and 400s.
 
 ## Limits

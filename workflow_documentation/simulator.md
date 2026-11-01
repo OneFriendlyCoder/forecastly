@@ -34,7 +34,7 @@ ml/simulator/config.yaml ----------+                      events.parquet
 
 | File | Job |
 |---|---|
-| `schemas/event.v1.json` | The event contract, for Python and Go to share |
+| `schemas/event.v1.json` | The event contract, for the simulator and services to share |
 | `ml/simulator/config.yaml` | Every rate and setting |
 | `ml/simulator/distributions.json` | Numbers fitted from real data |
 | `ml/simulator/simulate.py` | The generator |
@@ -203,7 +203,7 @@ make up
 Fault injection is covered in [replay_tool.md](replay_tool.md).
 
 - **Order:** events go out in time order, and the key keeps each deal on one partition.
-- **Partitioning:** it uses the murmur2 method, matching the default in Java and common Go Kafka clients.
+- **Partitioning:** it uses the murmur2 method, matching the default in Java and other common Kafka clients.
 - **Safe delivery:** the producer runs in idempotent mode, so a retry can't create a duplicate. The tool stops with an error if any event fails.
 - **Repeat runs:** every run adds the events to the topic again. Use `make reset` and `make up` to start from an empty topic.
 

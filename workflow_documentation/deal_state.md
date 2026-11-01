@@ -1,6 +1,6 @@
 # Pipeline Pulse: Deal-State Service
 
-The deal-state service is a Go program that reads activity events from Kafka and keeps a live record of each deal in Postgres. It's the first part of the pipeline that processes events as they arrive.
+The deal-state service is a Python program that reads activity events from Kafka and keeps a live record of each deal in Postgres. It's the first part of the pipeline that processes events as they arrive.
 
 ```text
 replay tool -> Kafka (activity.events) -> deal-state -> Postgres
@@ -88,7 +88,7 @@ Building this test found two problems:
 
 `make load-test` runs four scenarios, each from an empty system, and writes the results to `data/load_test_results.json`. The copies from `--scale` have new ids, so nothing is skipped as a duplicate.
 
-These figures were measured before live scoring was added. The script now includes scoring, so the current results are in [scoring.md](scoring.md) and the JSON file.
+These figures were measured on the Go version, before live scoring was added. The script now includes scoring, so the current results are in [scoring.md](scoring.md) and the JSON file.
 
 | Scenario | Consumers | Events | Throughput | Peak backlog | p95 latency |
 |---|---|---|---|---|---|

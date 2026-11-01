@@ -80,6 +80,15 @@ This records what went wrong during the build, how it was found and how it was f
 | The saved evaluation counted timed-out cases as 0-second responses, which made the speed look better than it was | Checking the summary against the raw cases | Exclude failed requests from timing and call counts |
 | A live test failed at the first 4-minute limit, even though the limit worked | The final test run. 31 of 50 evaluation answers fit in 4 minutes, and 34 fit in 5 | Raise the limit to 5 minutes. It's a trade-off: a shorter wait, but more plain facts answers when the provider is slow |
 
+## Move from Go to Python
+
+We replaced the Go `deal-state` service and API with Python, because the project owner needs to be able to explain and maintain the code. The Go version is kept on the `agent` branch.
+
+| Problem | How it was found | Fix |
+|---|---|---|
+| Python's JSON reader accepts `Infinity`, huge numbers and broken text that Postgres refuses, so one bad message could have stopped the consumer | Reviewing what the Go parser rejected, before porting it | Reject them in `parse_event`, so they go to the dead-letter topic, and test each case |
+| FastAPI returns 422 for a bad limit, but our API promises 400 | Comparing it with the existing tests | Convert validation errors to the same 400 response |
+
 ## Open issues
 
 These are known and not fixed yet:

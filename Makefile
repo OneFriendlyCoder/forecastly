@@ -32,7 +32,8 @@ train:
 	.venv/bin/python ml/model/train.py
 
 test: snapshots
-	go test ./...
+	.venv/bin/python services/deal-state/test_main.py
+	.venv/bin/python services/api/test_main.py
 	.venv/bin/python ml/simulator/test_simulate.py
 	.venv/bin/python ml/features/test_features.py
 	.venv/bin/python ml/model/test_train.py

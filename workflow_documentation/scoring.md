@@ -3,7 +3,7 @@
 This step turns the saved model into a running system. An event arrives, the deal's features update, and a fresh score lands in Postgres.
 
 ```text
-activity.events -> Go deal-state -> deal.features -> Python scoring -> Postgres: deal_scores
+activity.events -> deal-state -> deal.features -> Python scoring -> Postgres: deal_scores
 ```
 
 ## How it works
@@ -36,19 +36,19 @@ The scorer commits offsets after Postgres commits. The `deal_scores` primary key
 
 | Check | Result |
 |---|---|
-| Go and Python features match | 3,000 live updates match `build_features` |
+| SQL and Python features match | 3,000 live updates match `build_features` |
 | Live and saved model scores match | Same 3,000 updates match |
 | Who gets scored | No scores under 7 days old or after a close |
 | Unseen deals, scored up to day 30 | AUC of 0.61 to 0.62 across two runs |
 | Faults and kills | 1,588 open deals end on identical scores, with about 18,000 injected faults and 6 forced kills |
 
-The test deliberately fails if the features drift. Changing one Go window from 14 to 15 days was caught at once: `emails_sent_14d` read 11 live and 10 in training code.
+The test deliberately fails if the features drift. Changing one SQL window from 14 to 15 days was caught at once: `emails_sent_14d` read 11 live and 10 in training code.
 
 The test compares open deals only. Which moment a closed deal was last scored depends on how its events were batched, so run totals also vary slightly (about 68,000 scores across 5,900 deals).
 
 ## Speed
 
-These are from `make load-test`, on one laptop in Docker. Full figures are in `data/load_test_results.json`.
+These are from `make load-test`, on one laptop in Docker. **They were measured on the Go version of `deal-state`.** The Python version needs a new load test, and it should be slower: a first replay took 124 seconds, or about 3,500 events/s. Full figures are in `data/load_test_results.json`.
 
 | Scenario | Consumers | Throughput | p95 event to score |
 |---|---|---|---|
@@ -67,7 +67,7 @@ Calculating features cost a lot of throughput. It fell from 11,888/s to 7,597/s 
 - **Very young deals have no score.** Deals that close within 7 days are never scored.
 - **Scoring isn't scaled out.** There is one scorer, and it read 100% CPU in one sample of the 3-consumer run. The scorer can run as several copies, but we haven't tested that.
 - **Outages are untested:** we killed the services, but not Postgres or Redpanda.
-- **`deal.features` has no schema contract.** Only our own code writes to it, and the Go and Python check covers the fields.
+- **`deal.features` has no schema contract.** Only our own code writes to it, and the feature comparison test covers the fields.
 
 ## Differences from the project plan
 
