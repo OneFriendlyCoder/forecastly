@@ -38,7 +38,7 @@ function App() {
           <button className="theme-toggle" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
             {theme === "dark" ? "Light mode" : "Dark mode"}
           </button>
-          <span className="demo-for">Demo for <img src="/outreach-logo.svg" alt="Outreach" /></span>
+          <span className="demo-for">Demo for Outreach AI</span>
         </div>
       </header>
       <LiveStrip />
