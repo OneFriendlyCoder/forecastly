@@ -32,6 +32,9 @@ Maven + Enron data -> simulator -> events.parquet
                                         |
                                         v
                                    Go API
+                                        |
+                                        v
+                                   React dashboard
 ```
 
 | Part | Status | Details |
@@ -47,7 +50,7 @@ Maven + Enron data -> simulator -> events.parquet
 | Model | Done | [model.md](model.md) |
 | Live features and scoring | Done | [scoring.md](scoring.md) |
 | Go API | Done | [api.md](api.md) |
-| Dashboard | Not started | |
+| Dashboard | Done | [dashboard.md](dashboard.md) |
 | Agent over MCP | Not started | |
 | CRM connector | Not started | |
 | CI | Not started | |
