@@ -94,6 +94,15 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  web:
+    build: ../web
+    ports:
+      - "127.0.0.1:3000:8080"
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+
 volumes:
   redpanda-data:
   postgres-data:

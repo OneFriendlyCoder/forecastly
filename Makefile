@@ -1,11 +1,11 @@
 COMPOSE := docker compose -f deploy/docker-compose.yml
 
-.PHONY: up down reset check snapshots train test test-e2e test-faults test-scoring test-api load-test
+.PHONY: up down reset check snapshots train test test-e2e test-faults test-scoring test-api test-dashboard load-test
 
 up:
 	$(COMPOSE) up -d --wait redpanda postgres
 	$(COMPOSE) up create-topics
-	$(COMPOSE) up -d --build deal-state scoring api
+	$(COMPOSE) up -d --build deal-state scoring api web
 	.venv/bin/python services/deal-state/seed_deals.py
 
 down:
@@ -35,6 +35,7 @@ test: snapshots
 	.venv/bin/python ml/simulator/test_simulate.py
 	.venv/bin/python ml/features/test_features.py
 	.venv/bin/python ml/model/test_train.py
+	cd web && npm test
 
 test-e2e:  # wipes local Kafka and Postgres data
 	$(MAKE) reset up
@@ -49,6 +50,9 @@ test-scoring:  # wipes local Kafka and Postgres data, several times
 
 test-api:  # wipes local Kafka and Postgres data
 	.venv/bin/python services/api/test_api.py
+
+test-dashboard: test-api  # wipes local Kafka and Postgres data
+	cd web && npm run test:e2e
 
 load-test:  # wipes local Kafka and Postgres data, several times
 	$(MAKE) up

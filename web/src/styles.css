@@ -1,0 +1,109 @@
+:root {
+  color-scheme: light dark;
+  --page: #f5f4f0;
+  --surface: #fcfcfb;
+  --text: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #6f6d68;
+  --grid: #e1e0d9;
+  --series-1: #2a78d6;
+  --link: #1c5cab;
+  --high-bg: #fbe4e2;
+  --high-text: #93201f;
+  --medium-bg: #fdf0d2;
+  --medium-text: #6e4c00;
+  --low-bg: #e4f3e4;
+  --low-text: #006300;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #121211;
+    --surface: #1a1a19;
+    --text: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #989690;
+    --grid: #2c2c2a;
+    --series-1: #3987e5;
+    --link: #7fb2f0;
+    --high-bg: #4a1f1e;
+    --high-text: #f6b9b6;
+    --medium-bg: #453411;
+    --medium-text: #f5d58e;
+    --low-bg: #1d3a1d;
+    --low-text: #a9e0a9;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a { color: var(--link); }
+
+header { padding: 14px 24px; background: var(--surface); border-bottom: 1px solid var(--grid); }
+header a { color: var(--text); font-weight: 650; text-decoration: none; }
+
+main { max-width: 1120px; margin: 0 auto; padding: 24px; }
+
+footer { max-width: 1120px; margin: 0 auto; padding: 0 24px 32px; color: var(--text-muted); font-size: 13px; }
+
+h1 { margin: 8px 0 2px; font-size: 26px; line-height: 1.2; }
+h2 { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+
+.lead { margin: 0 0 20px; color: var(--text-secondary); }
+.muted { color: var(--text-muted); }
+.back { display: inline-block; margin-bottom: 8px; font-size: 14px; }
+
+.notice { padding: 12px 16px; background: var(--surface); border: 1px solid var(--grid); border-radius: 8px; }
+
+.table-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--grid); border-radius: 8px; }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+th, td { padding: 10px 14px; border-bottom: 1px solid var(--grid); }
+tbody tr:last-child td { border-bottom: 0; }
+.number { text-align: right; font-variant-numeric: tabular-nums; }
+
+.deals tbody tr { cursor: pointer; }
+.deals tbody tr:hover { background: var(--page); }
+.deals td:nth-child(-n+5) { white-space: nowrap; }
+
+.risk { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.risk-high { background: var(--high-bg); color: var(--high-text); }
+.risk-medium { background: var(--medium-bg); color: var(--medium-text); }
+.risk-low { background: var(--low-bg); color: var(--low-text); }
+
+.grid { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
+.card { padding: 18px 20px; background: var(--surface); border: 1px solid var(--grid); border-radius: 8px; min-width: 0; }
+.wide { grid-column: 1 / -1; }
+.hero { margin: 0 0 6px; font-size: 44px; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.card .muted { margin: 10px 0 0; font-size: 13px; }
+
+.reasons { margin: 0; padding: 0; list-style: none; }
+.reasons li { display: flex; gap: 10px; padding: 7px 0; }
+.reasons small { display: block; color: var(--text-muted); font-size: 12.5px; }
+.arrow { color: var(--text-secondary); font-weight: 700; }
+
+.chart-tooltip { display: grid; padding: 6px 10px; background: var(--surface); border: 1px solid var(--grid); border-radius: 6px; font-size: 13px; }
+.chart-tooltip span { color: var(--text-secondary); }
+
+.chart-table { margin-top: 10px; font-size: 13px; }
+.chart-table summary { color: var(--link); cursor: pointer; }
+.chart-table table { max-width: 320px; margin-top: 8px; }
+.chart-table th, .chart-table td { padding: 4px 8px; }
+
+.activity { margin-top: 16px; }
+dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 0; }
+dt { color: var(--text-secondary); font-size: 13px; }
+dd { margin: 0; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 720px) {
+  main { padding: 16px; }
+  .grid { grid-template-columns: 1fr; }
+}
