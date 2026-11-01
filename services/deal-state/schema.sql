@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE IF NOT EXISTS events (
     event_id       uuid PRIMARY KEY,  -- also what makes redelivery safe
     event_type     text NOT NULL,
@@ -44,4 +46,24 @@ CREATE TABLE IF NOT EXISTS deal_scores (
     event_published_at timestamptz NOT NULL,                        -- when the newest event entered Kafka
     scored_at          timestamptz NOT NULL DEFAULT clock_timestamp(),
     PRIMARY KEY (deal_id, as_of, model_version)                     -- also what makes redelivery safe
+);
+
+CREATE TABLE IF NOT EXISTS playbook_chunks (
+    chunk_id  text PRIMARY KEY,
+    guide     text NOT NULL,
+    title     text NOT NULL,
+    body      text NOT NULL,
+    embedding vector(2048) NOT NULL  -- no index: pgvector's limit is 2,000, and a few dozen rows scan instantly
+);
+
+CREATE TABLE IF NOT EXISTS deal_explanations (
+    deal_id       text NOT NULL,
+    as_of         timestamptz NOT NULL,
+    model_version text NOT NULL,
+    llm_model     text NOT NULL,
+    answer        jsonb NOT NULL,
+    grounded      boolean NOT NULL,
+    latency_ms    int NOT NULL,
+    created_at    timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (deal_id, as_of, model_version, llm_model)  -- a new score means a new explanation
 );

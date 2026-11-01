@@ -5,7 +5,7 @@
 ## Pages
 
 - **At-risk deals (`#/`):** open deals, riskiest first, with win chance, risk level and top reason. Clicking a row opens the deal.
-- **Deal page (`#/deals/{id}`):** the current win chance, the top 3 reasons, a chart of the score over time, and activity counts. The chart has a table view for anyone who can't read it visually.
+- **Deal page (`#/deals/{id}`):** the current win chance, the top 3 reasons, an "Explain this deal" button for open deals (see [agent.md](agent.md)), a chart of the score over time, and activity counts. The chart has a table view for anyone who can't read it visually.
 
 ## How it works
 

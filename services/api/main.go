@@ -63,6 +63,17 @@ SELECT json_build_object('deal_id', d.deal_id, 'scores', (
 ))::text
 FROM deals d WHERE d.deal_id = $1`
 
+// The newest events first, which is what the agent reads.
+const eventsSQL = `
+SELECT json_build_object('deal_id', d.deal_id, 'events', (
+    SELECT coalesce(json_agg(t ORDER BY t.occurred_at DESC, t.event_id), '[]')
+    FROM (
+        SELECT e.event_id, e.event_type, e.occurred_at, e.actor, e.payload FROM events e
+        WHERE e.deal_id = d.deal_id ORDER BY e.occurred_at DESC, e.event_id LIMIT $2
+    ) t
+))::text
+FROM deals d WHERE d.deal_id = $1`
+
 type server struct {
 	db *pgxpool.Pool
 }
@@ -124,6 +135,15 @@ func (s *server) scores(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, scoresSQL, r.PathValue("id"), limit)
 }
 
+func (s *server) events(w http.ResponseWriter, r *http.Request) {
+	limit, ok := parseLimit(r)
+	if !ok {
+		writeError(w, http.StatusBadRequest, "limit must be from 1 to 1000")
+		return
+	}
+	s.respond(w, r, eventsSQL, r.PathValue("id"), limit)
+}
+
 func (s *server) health(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), queryTimeout)
 	defer cancel()
@@ -141,6 +161,7 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("GET /deals/at-risk", s.atRisk)
 	mux.HandleFunc("GET /deals/{id}", s.deal)
 	mux.HandleFunc("GET /deals/{id}/scores", s.scores)
+	mux.HandleFunc("GET /deals/{id}/events", s.events)
 	return mux
 }
 

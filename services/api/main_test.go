@@ -8,7 +8,7 @@ import (
 
 func TestBadLimitsAreRejectedBeforeAnyQuery(t *testing.T) {
 	routes := (&server{}).routes() // no database: reaching one would panic
-	for _, path := range []string{"/deals/at-risk", "/deals/d1/scores"} {
+	for _, path := range []string{"/deals/at-risk", "/deals/d1/scores", "/deals/d1/events"} {
 		for _, limit := range []string{"0", "-1", "1001", "abc", "1.5"} {
 			response := httptest.NewRecorder()
 			routes.ServeHTTP(response, httptest.NewRequest(http.MethodGet, path+"?limit="+limit, nil))

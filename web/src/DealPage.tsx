@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { fetchDeal, NotFound } from "./api";
+import { Explain } from "./Explain";
 import { formatDate, formatMoney, formatScore, riskLevel } from "./format";
 import { Reasons } from "./Reasons";
 import { ScoreChart } from "./ScoreChart";
@@ -44,6 +45,7 @@ export function DealPage({ id }: { id: string }) {
             <h2>What moved this score</h2>
             <Reasons factors={deal.factors ?? []} />
           </section>
+          {deal.closed ? null : <Explain id={deal.deal_id} />}
           <section className="card wide">
             <h2>Win chance over time</h2>
             <ScoreChart scores={scores} />

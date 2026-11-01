@@ -67,3 +67,29 @@ test("a first load with the API down says so", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("alert")).toContainText("Can't reach the API");
 });
+
+test("the agent's answer and its fallback both display", async ({ page, request }) => {
+  const { deals } = await (await request.get(`${API}/deals/at-risk`)).json();
+  const answers = [
+    { grounded: true, answer: { summary: "This deal has gone quiet.", reasons: [{ text: "No replies lately.", feature: "replies_14d" }],
+      next_step: { text: "Call the champion.", playbook_id: "a#b" } } },
+    { grounded: false, answer: { summary: "These are the facts behind the score.", reasons: [{ text: "replies 14d: 0", feature: "replies_14d" }], next_step: null } },
+  ];
+  await page.route("**/agent/explain/**", (route) => route.fulfill({ json: answers.shift() }));
+
+  await page.goto(`/#/deals/${deals[0].deal_id}`);
+  await page.getByRole("button", { name: "Explain this deal" }).click();
+  await expect(page.getByText("Call the champion.")).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "Explain this deal" }).click();
+  await expect(page.getByRole("alert")).toContainText("plain facts");
+});
+
+test("an agent failure offers another try", async ({ page, request }) => {
+  const { deals } = await (await request.get(`${API}/deals/at-risk`)).json();
+  await page.route("**/agent/explain/**", (route) => route.abort());
+  await page.goto(`/#/deals/${deals[0].deal_id}`);
+  await page.getByRole("button", { name: "Explain this deal" }).click();
+  await expect(page.getByRole("alert")).toContainText("couldn't be reached");
+  await expect(page.getByRole("button", { name: "Explain this deal" })).toBeEnabled();
+});

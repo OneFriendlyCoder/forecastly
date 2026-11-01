@@ -34,7 +34,10 @@ Maven + Enron data -> simulator -> events.parquet
                                    Go API
                                         |
                                         v
-                                   React dashboard
+                                   React dashboard <-> Agent <-> NVIDIA LLM
+                                                       |
+                                                       v
+                                                  MCP clients
 ```
 
 | Part | Status | Details |
@@ -45,14 +48,15 @@ Maven + Enron data -> simulator -> events.parquet
 | Replay tool | Done | [replay_tool.md](replay_tool.md) |
 | Go deal-state service | Done | [deal_state.md](deal_state.md) |
 | Fault and load testing | Done | [deal_state.md](deal_state.md) |
-| Problems found while building | Ongoing | [postmortem.md](postmortem.md) |
+| Problems found while building | Ongoing | [issues_resolved.md](issues_resolved.md) |
 | Features and training data | Done | [features.md](features.md) |
 | Model | Done | [model.md](model.md) |
 | Live features and scoring | Done | [scoring.md](scoring.md) |
 | Go API | Done | [api.md](api.md) |
 | Dashboard | Done | [dashboard.md](dashboard.md) |
-| Agent over MCP | Not started | |
+| Agent over MCP | Done | [agent.md](agent.md) |
 | CRM connector | Not started | |
+| Future scope | Planned | [future_scope.md](future_scope.md) |
 | CI | Not started | |
 
 ## Run it from a fresh clone
@@ -70,6 +74,7 @@ python3 -m venv .venv
 
 make snapshots
 make train
+cp .env.example .env                          # then add your NVIDIA key; optional, used by the agent
 make up
 .venv/bin/python ml/simulator/replay.py --fast
 ```

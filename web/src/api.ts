@@ -38,3 +38,18 @@ export async function fetchDeal(id: string) {
   const [deal, history] = await Promise.all([get<Deal>(path), get<{ scores: ScorePoint[] }>(`${path}/scores?limit=1000`)]);
   return { deal, scores: history.scores };
 }
+
+export type Explanation = {
+  grounded: boolean;
+  answer: {
+    summary: string;
+    reasons: { text: string; feature: string }[];
+    next_step: { text: string; playbook_id: string } | null;
+  };
+};
+
+export async function explainDeal(id: string): Promise<Explanation> {
+  const response = await fetch(`/agent/explain/${encodeURIComponent(id)}`, { method: "POST" });
+  if (!response.ok) throw new Error(`Agent returned ${response.status}`);
+  return response.json();
+}

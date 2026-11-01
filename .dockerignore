@@ -4,3 +4,4 @@ ml/
 .git/
 workflow_documentation/
 *.pdf
+.env

@@ -74,6 +74,17 @@ def check_history(latest):
     print(f"ok: score history matches Postgres ({len(scores)} scores, oldest first)")
 
 
+def check_events(latest):
+    deal_id = latest.iloc[0]["deal_id"]
+    stored = sql(f"SELECT count(*) AS n FROM events WHERE deal_id = '{deal_id}'")["n"].iloc[0]
+    status, body = get(f"/deals/{deal_id}/events?limit=1000")
+    times = [e["occurred_at"] for e in body["events"]]
+    assert status == 200 and len(times) == stored and times == sorted(times, reverse=True)
+    assert get(f"/deals/{deal_id}/events?limit=2")[1]["events"] == body["events"][:2]
+    assert get("/deals/nope/events")[0] == 404
+    print(f"ok: events match Postgres ({len(times)} events, newest first)")
+
+
 def check_bad_requests():
     assert get("/health") == (200, {"status": "ok"})
     assert get("/deals/nope")[0] == 404
@@ -91,6 +102,7 @@ def main():
     check_at_risk(latest)
     check_deal(latest)
     check_history(latest)
+    check_events(latest)
     check_bad_requests()
 
 

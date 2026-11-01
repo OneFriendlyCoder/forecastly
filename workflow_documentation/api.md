@@ -10,8 +10,9 @@
 | `GET /deals/at-risk` | Open deals with the lowest latest score first, with product, amount and top 3 reasons |
 | `GET /deals/{id}` | One deal's latest score, reasons, features and activity counts |
 | `GET /deals/{id}/scores` | The deal's newest scores, oldest first, for a trend chart |
+| `GET /deals/{id}/events` | The deal's newest events, newest first, for the agent |
 
-`at-risk` and `scores` take `?limit=`, a whole number from 1 to 1000. The default is 50.
+`at-risk`, `scores` and `events` take `?limit=`, a whole number from 1 to 1000. The default is 50.
 
 - **Deals with no score:** a deal in the `deals` table with no activity returns 200, with `score` and `activity` set to `null`.
 - **Closed deals:** they keep their detail and history but never appear in `at-risk`.

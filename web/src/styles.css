@@ -90,6 +90,12 @@ tbody tr:last-child td { border-bottom: 0; }
 .reasons small { display: block; color: var(--text-muted); font-size: 12.5px; }
 .arrow { color: var(--text-secondary); font-weight: 700; }
 
+.explain button { padding: 7px 14px; border: 1px solid var(--grid); border-radius: 6px; background: var(--page); color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+.explain button:disabled { cursor: progress; color: var(--text-muted); }
+.explain ul { margin: 0 0 12px; padding-left: 18px; }
+.explain .next { margin: 0; padding: 10px 12px; background: var(--page); border-radius: 6px; }
+.explain small { display: block; margin-top: 10px; color: var(--text-muted); font-size: 12.5px; }
+
 .chart-tooltip { display: grid; padding: 6px 10px; background: var(--surface); border: 1px solid var(--grid); border-radius: 6px; font-size: 13px; }
 .chart-tooltip span { color: var(--text-secondary); }
 
