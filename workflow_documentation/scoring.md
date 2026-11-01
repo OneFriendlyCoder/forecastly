@@ -3,7 +3,7 @@
 This step turns the saved model into a running system. An event arrives, the deal's features update, and a fresh score lands in Postgres.
 
 ```text
-activity.events -> Go deal-state -> deal.features -> Python scoring -> Postgres: deal_scores
+activity.events -> deal-state -> deal.features -> Python scoring -> Postgres: deal_scores
 ```
 
 ## How it works
@@ -36,30 +36,32 @@ The scorer commits offsets after Postgres commits. The `deal_scores` primary key
 
 | Check | Result |
 |---|---|
-| Go and Python features match | 3,000 live updates match `build_features` |
+| SQL and Python features match | 3,000 live updates match `build_features` |
 | Live and saved model scores match | Same 3,000 updates match |
 | Who gets scored | No scores under 7 days old or after a close |
 | Unseen deals, scored up to day 30 | AUC of 0.61 to 0.62 across two runs |
 | Faults and kills | 1,588 open deals end on identical scores, with about 18,000 injected faults and 6 forced kills |
 
-The test deliberately fails if the features drift. Changing one Go window from 14 to 15 days was caught at once: `emails_sent_14d` read 11 live and 10 in training code.
+The test deliberately fails if the features drift. Changing one SQL window from 14 to 15 days was caught at once: `emails_sent_14d` read 11 live and 10 in training code.
 
 The test compares open deals only. Which moment a closed deal was last scored depends on how its events were batched, so run totals also vary slightly (about 68,000 scores across 5,900 deals).
 
 ## Speed
 
-These are from `make load-test`, on one laptop in Docker. Full figures are in `data/load_test_results.json`.
+These are from `make load-test` on the Python `deal-state` service, on one laptop in Docker. Full figures are in `data/load_test_results.json`.
 
-| Scenario | Consumers | Throughput | p95 event to score |
-|---|---|---|---|
-| Target rate (1M events/hour) | 1 | 278/s, the rate requested | 0.237 s |
-| As fast as possible | 1 | 7,597/s | 153 s |
-| As fast as possible | 3 | 10,824/s | 112 s |
-| Burst | 1 | Not a limit test | 50 s |
+| Scenario | Consumers | Throughput | p95 event to score | Python result |
+|---|---|---|---|---|
+| Target rate (1M events/hour) | 1 | 276/s, close to the rate requested | 0.431 s | Finished, with a peak backlog of 28 |
+| As fast as possible | 1 | 2,866/s | 426 s | Finished |
+| As fast as possible | 3 | About 1,230/s | Not measured | Stopped at the 15-minute limit |
+| Burst | 1 | Not measured | Not measured | Not run |
 
-The plan's under-2-second target is met at the target rate, with a worst case of 0.374 s. In the other runs, the latency is mostly time waiting in the backlog.
+The plan's under-2-second target is met at the target rate, with a worst case of 0.541 s. In the full-speed run, the latency is mostly time waiting in the backlog.
 
-Calculating features cost a lot of throughput. It fell from 11,888/s to 7,597/s with one consumer, and from 24,199/s to 10,824/s with three. The plan's target rate is still far below these numbers.
+One consumer handles about 10 million events an hour, which is about 10 times the target, and `deal-state` used 93% of a CPU in that run. Python is much slower than the earlier Go version, which reached 7,597/s with one consumer and 10,824/s with three.
+
+**Adding consumers made it slower.** Three consumers were slower than one, even with work spread evenly and no events lost. In one sample, the scorer used 255% CPU and Postgres 181%, so the likely cause is the laptop running out of CPU. That's a lead, not proof. Until it's explained, don't count on adding consumers to go faster.
 
 ## Limits
 
@@ -67,7 +69,7 @@ Calculating features cost a lot of throughput. It fell from 11,888/s to 7,597/s 
 - **Very young deals have no score.** Deals that close within 7 days are never scored.
 - **Scoring isn't scaled out.** There is one scorer, and it read 100% CPU in one sample of the 3-consumer run. The scorer can run as several copies, but we haven't tested that.
 - **Outages are untested:** we killed the services, but not Postgres or Redpanda.
-- **`deal.features` has no schema contract.** Only our own code writes to it, and the Go and Python check covers the fields.
+- **`deal.features` has no schema contract.** Only our own code writes to it, and the feature comparison test covers the fields.
 
 ## Differences from the project plan
 

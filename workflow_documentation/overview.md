@@ -16,7 +16,7 @@ Maven + Enron data -> simulator -> events.parquet
                                    Kafka: activity.events ----> activity.events.dlq
                                         |                       (broken events)
                                         v
-                                   Go deal-state service
+                                   Python deal-state service
                                         |
                                         v
                                    Postgres: events, deal_health
@@ -31,10 +31,13 @@ Maven + Enron data -> simulator -> events.parquet
                                    Postgres: deal_scores
                                         |
                                         v
-                                   Go API
+                                   FastAPI API
                                         |
                                         v
-                                   React dashboard
+                                   React dashboard <-> Agent <-> NVIDIA LLM
+                                                       |
+                                                       v
+                                                  MCP clients
 ```
 
 | Part | Status | Details |
@@ -43,21 +46,22 @@ Maven + Enron data -> simulator -> events.parquet
 | Simulator generator | Done | [simulator.md](simulator.md) |
 | Local infrastructure | Done | [infrastructure.md](infrastructure.md) |
 | Replay tool | Done | [replay_tool.md](replay_tool.md) |
-| Go deal-state service | Done | [deal_state.md](deal_state.md) |
+| Python deal-state service | Done | [deal_state.md](deal_state.md) |
 | Fault and load testing | Done | [deal_state.md](deal_state.md) |
-| Problems found while building | Ongoing | [postmortem.md](postmortem.md) |
+| Problems found while building | Ongoing | [issues_resolved.md](issues_resolved.md) |
 | Features and training data | Done | [features.md](features.md) |
 | Model | Done | [model.md](model.md) |
 | Live features and scoring | Done | [scoring.md](scoring.md) |
-| Go API | Done | [api.md](api.md) |
+| FastAPI API | Done | [api.md](api.md) |
 | Dashboard | Done | [dashboard.md](dashboard.md) |
-| Agent over MCP | Not started | |
+| Agent over MCP | Done | [agent.md](agent.md) |
 | CRM connector | Not started | |
+| Future scope | Planned | [future_scope.md](future_scope.md) |
 | CI | Not started | |
 
 ## Run it from a fresh clone
 
-You need Docker, Go and Python.
+You need Docker and Python.
 
 ```bash
 python3 -m venv .venv
@@ -70,6 +74,7 @@ python3 -m venv .venv
 
 make snapshots
 make train
+cp .env.example .env                          # then add your NVIDIA key; optional, used by the agent
 make up
 .venv/bin/python ml/simulator/replay.py --fast
 ```
@@ -82,13 +87,14 @@ These come from a laptop in Docker. See [deal_state.md](deal_state.md) and [scor
 |---|---|
 | Events simulated | 439,821 across 8,300 deals |
 | Clean-vs-faults proof | Final state identical with about 18,000 injected faults and 3 forced kills |
-| Target rate of 1M events/hour | Handled with no backlog, p95 of 0.237 s from event to score |
-| Maximum throughput with scoring | 7,597 events/s with 1 consumer, 10,824 with 3 |
+| Target rate of 1M events/hour | Handled with no backlog, p95 of 0.431 s from event to score |
+| Maximum throughput with scoring | 2,866 events/s with 1 consumer. 3 consumers were slower, and the burst test wasn't run |
 
 ## Changes from the original plan
 
 | Plan | Now | Why |
 |---|---|---|
+| Go services | Python `deal-state` and FastAPI API | The project owner needs to explain and maintain the code. The Go version is on the `agent` branch |
 | Three real data sources | Maven and Enron only | Olist couldn't test deal outcomes. See [data.md](data.md) |
 | Stage-weighted baseline | Win rate by stage and days open | The plan's version gives every finished deal the same 63% |
 | Model numbers as targets | Numbers to report honestly | The simulator's settings could decide the score |

@@ -1,0 +1,1405 @@
+{
+  "summary": {
+    "cases": 50,
+    "groundedness": 0.86,
+    "relevance": 0.86,
+    "actionability": 0.86,
+    "retried_share": 0.0,
+    "avg_llm_calls": 2.0,
+    "p50_latency_ms": 183393,
+    "p95_latency_ms": 453976,
+    "failed_requests": 7
+  },
+  "cases": [
+    {
+      "deal_id": "G2XP6IGJ",
+      "win_chance": 0.196,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 329067,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated outbound emails, several negative replies, and no buyer reply for 25 days.",
+        "reasons": [
+          {
+            "text": "8 emails were sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          },
+          {
+            "text": "7 negative replies have been recorded.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "25 days have passed since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          }
+        ],
+        "next_step": {
+          "text": "Send a short reply acknowledging the buyer\u2019s latest concern and ask one question to identify whether the issue is timing, budget, or fit.",
+          "playbook_id": "negative-replies#respond-to-the-concern-first"
+        }
+      }
+    },
+    {
+      "deal_id": "3N46WQVI",
+      "win_chance": 0.33,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 21023,
+      "rejected": [],
+      "answer": {
+        "summary": "Buyer engagement has stalled, with no recent replies despite continued outreach. Change the approach with a short, easy-to-answer message rather than sending another standard follow-up.",
+        "reasons": [
+          {
+            "text": "71 days have passed since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          },
+          {
+            "text": "5 emails were sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          },
+          {
+            "text": "0 buyer replies were received in the last 14 days.",
+            "feature": "replies_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Send one short message asking the buyer to answer yes or no on whether the project is still a priority this quarter.",
+          "playbook_id": "reengage-silent-deals#when-a-buyer-stops-replying"
+        }
+      }
+    },
+    {
+      "deal_id": "B06D1F9M",
+      "win_chance": 0.377,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 191255,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with prolonged buyer silence and repeated negative replies.",
+        "reasons": [
+          {
+            "text": "42 days since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          },
+          {
+            "text": "15 negative replies so far.",
+            "feature": "negative_replies"
+          }
+        ],
+        "next_step": {
+          "text": "Send one short message asking a yes-or-no question about whether the project is still a priority this quarter, making it easy to answer in one line.",
+          "playbook_id": "reengage-silent-deals#when-a-buyer-stops-replying"
+        }
+      }
+    },
+    {
+      "deal_id": "VP8ERXPR",
+      "win_chance": 0.403,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 276811,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 30 days since the last buyer reply and 12 negative replies so far.",
+        "reasons": [
+          {
+            "text": "30 days since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          },
+          {
+            "text": "12 negative replies so far.",
+            "feature": "negative_replies"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a phone call to the buyer and leave a short voicemail that references something specific to their project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "2FMT1053",
+      "win_chance": 0.425,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 52878,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has weak recent engagement and a pattern of negative replies, leaving a low chance of winning. The next move should be a direct, personal re-engagement rather than another routine email.",
+        "reasons": [
+          {
+            "text": "There have been 6 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "There was only 1 reply in the last 14 days.",
+            "feature": "replies_14d"
+          },
+          {
+            "text": "There were 0 meetings in the last 14 days.",
+            "feature": "meetings_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Invite a manager or technical colleague to join the next conversation with the buyer.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "FW2XJG9S",
+      "win_chance": 0.443,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 93719,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 6 negative replies and 27 days since the last buyer reply.",
+        "reasons": [
+          {
+            "text": "There are 6 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "It has been 27 days since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a colleague who knows the buyer to introduce you to a second person on the buying team.",
+          "playbook_id": "reengage-silent-deals#going-around-the-silence"
+        }
+      }
+    },
+    {
+      "deal_id": "E4THD359",
+      "win_chance": 0.456,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 68094,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 12 negative replies and a 57-hour median reply time. Buyer engagement remains mixed, with 6 buyers having replied.",
+        "reasons": [
+          {
+            "text": "12 negative replies so far",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "57 hours median reply time",
+            "feature": "median_reply_hours"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation to address the concerns and reset the tone.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "PYRLUYIQ",
+      "win_chance": 0.463,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 64794,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated negative replies and close-date pushes weakening the opportunity.",
+        "reasons": [
+          {
+            "text": "There have been 8 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "The close date has been pushed 4 times.",
+            "feature": "close_date_pushes"
+          }
+        ],
+        "next_step": {
+          "text": "Reply to the latest negative reply with a one-sentence acknowledgment and one question asking whether the concern is timing, budget, or fit.",
+          "playbook_id": "negative-replies#respond-to-the-concern-first"
+        }
+      }
+    },
+    {
+      "deal_id": "PO158L29",
+      "win_chance": 0.476,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 70711,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 11 negative replies and 19 days since the last buyer reply. The next outreach should change the channel rather than send another standard email.",
+        "reasons": [
+          {
+            "text": "11 negative replies so far",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "19 days since the last buyer reply",
+            "feature": "days_since_last_reply"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a short voicemail referencing something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "RG893DYQ",
+      "win_chance": 0.487,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 36693,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated negative replies, no meetings in the last 14 days, and repeated close-date pushes.",
+        "reasons": [
+          {
+            "text": "8 negative replies so far",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "0 meetings in the last 14 days",
+            "feature": "meetings_14d"
+          },
+          {
+            "text": "6 close-date pushes",
+            "feature": "close_date_pushes"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation to address the negative replies.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "R55U5QI4",
+      "win_chance": 0.495,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 54051,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with no recent buyer engagement and repeated negative replies.",
+        "reasons": [
+          {
+            "text": "There have been 28 days since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          },
+          {
+            "text": "The buyer has sent 10 negative replies so far.",
+            "feature": "negative_replies"
+          }
+        ],
+        "next_step": {
+          "text": "Send a brief note saying you will pause outreach and leave the door open for the buyer to respond.",
+          "playbook_id": "reengage-silent-deals#knowing-when-to-stop"
+        }
+      }
+    },
+    {
+      "deal_id": "0K59ZLQC",
+      "win_chance": 0.504,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 56736,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 8 negative replies and no meetings in the last 14 days. Bringing in another voice may help reset the conversation.",
+        "reasons": [
+          {
+            "text": "There have been 8 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "There were 0 meetings in the last 14 days.",
+            "feature": "meetings_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next conversation to address the buyer's concerns.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "XFB1VXQY",
+      "win_chance": 0.514,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 47879,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 9 negative replies, a 57-hour median reply time, and no meetings in the last 14 days.",
+        "reasons": [
+          {
+            "text": "9 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "Median buyer reply time is 57 hours.",
+            "feature": "median_reply_hours"
+          },
+          {
+            "text": "0 meetings in the last 14 days.",
+            "feature": "meetings_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next conversation with the buyer to address the negative tone.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "JUHQ1POT",
+      "win_chance": 0.525,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 41982,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 6 negative replies and 5 close-date pushes outweighing 4 buyer replies. The next outreach should change channel rather than add another email.",
+        "reasons": [
+          {
+            "text": "There have been 6 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "The close date has been pushed 5 times.",
+            "feature": "close_date_pushes"
+          },
+          {
+            "text": "4 buyers have replied.",
+            "feature": "buyers_replied"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a phone call and leave a short voicemail referencing something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "SXYJU7LC",
+      "win_chance": 0.533,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 54232,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 6 negative replies and 26 days since the last buyer reply.",
+        "reasons": [
+          {
+            "text": "There have been 6 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "The last buyer reply was 26 days ago.",
+            "feature": "days_since_last_reply"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a phone call to a buyer and leave a short voicemail referencing something specific to their project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "T7N0RX05",
+      "win_chance": 0.543,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 281029,
+      "rejected": [],
+      "answer": {
+        "summary": "Buyer engagement is weak, with 40 days since the last reply and a median reply time of 123 hours. The next outreach should use a different channel rather than another email.",
+        "reasons": [
+          {
+            "text": "40 days since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          },
+          {
+            "text": "The median buyer reply time is 123 hours.",
+            "feature": "median_reply_hours"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a short phone call referencing something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "IMLFM79C",
+      "win_chance": 0.553,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 323408,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated negative replies and close-date pushes despite recent buyer engagement.",
+        "reasons": [
+          {
+            "text": "There have been 6 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "The close date has been pushed 4 times.",
+            "feature": "close_date_pushes"
+          },
+          {
+            "text": "The buyer has sent 3 replies in the last 14 days.",
+            "feature": "replies_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation and help reset the discussion.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "9SLINQY5",
+      "win_chance": 0.557,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 187457,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated negative buyer responses and no meetings in the last 14 days.",
+        "reasons": [
+          {
+            "text": "11 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "0 meetings in the last 14 days.",
+            "feature": "meetings_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Invite a manager or technical colleague to join the next buyer conversation.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "GZ6SFRAT",
+      "win_chance": 0.567,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 463317,
+      "rejected": [],
+      "answer": {
+        "summary": "The deal has a low chance of winning: buyer engagement is present, but recent activity is dominated by outbound emails with no buyer reply or meeting shown. The latest outreach has not generated a response.",
+        "reasons": [
+          {
+            "text": "6 buyer replies so far, but the recent activity shows no buyer reply to the latest outreach.",
+            "feature": "buyers_replied"
+          },
+          {
+            "text": "9 emails sent in the last 14 days, with no buyer reply shown in the recent activity.",
+            "feature": "emails_sent_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Send one short message asking the buyer a yes-or-no question about whether the project is still a priority this quarter, making it easy to answer in one line.",
+          "playbook_id": "reengage-silent-deals#when-a-buyer-stops-replying"
+        }
+      }
+    },
+    {
+      "deal_id": "IAUXJ05J",
+      "win_chance": 0.577,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 196910,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 12 negative replies and no meetings in the last 14 days. The next step should focus on resetting the conversation with the buyer.",
+        "reasons": [
+          {
+            "text": "12 negative replies so far",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "0 meetings in the last 14 days",
+            "feature": "meetings_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation to address the concerns and reset the discussion.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "8TRT2HNF",
+      "win_chance": 0.584,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 221793,
+      "rejected": [],
+      "answer": {
+        "summary": "The main concern is prolonged buyer silence, and the latest recorded buyer reply was negative. Recent outreach has continued without a new buyer reply.",
+        "reasons": [
+          {
+            "text": "34 days since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          },
+          {
+            "text": "2 emails were sent in the last 14 days, with no buyer reply shown in the recent activity after those sends.",
+            "feature": "emails_sent_14d"
+          },
+          {
+            "text": "4 buyer replies so far, and the latest recorded reply was negative.",
+            "feature": "buyers_replied"
+          }
+        ],
+        "next_step": {
+          "text": "Send one brief email saying you will pause outreach and leave the door open, and ask for an honest answer.",
+          "playbook_id": "reengage-silent-deals#knowing-when-to-stop"
+        }
+      }
+    },
+    {
+      "deal_id": "5JDWBOLS",
+      "win_chance": 0.59,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 163901,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated negative replies and close-date pushes alongside continued buyer engagement.",
+        "reasons": [
+          {
+            "text": "There have been 8 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "The close date has been pushed 8 times.",
+            "feature": "close_date_pushes"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a short phone call that references something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "A7OVC1WK",
+      "win_chance": 0.598,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 217229,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning: the last 14 days show 7 emails sent and 0 meetings.",
+        "reasons": [
+          {
+            "text": "7 emails were sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          },
+          {
+            "text": "0 meetings were held in the last 14 days.",
+            "feature": "meetings_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a phone call and leave a short voicemail.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "5PWO4RPC",
+      "win_chance": 0.603,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 194141,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated negative replies and no meetings in the last 14 days.",
+        "reasons": [
+          {
+            "text": "6 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "0 meetings in the last 14 days.",
+            "feature": "meetings_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation to address the negative tone.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "EB89ONZN",
+      "win_chance": 0.609,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 183843,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 10 negative replies and 7 close-date pushes standing out alongside 6 buyer replies.",
+        "reasons": [
+          {
+            "text": "There are 10 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "6 buyers replied.",
+            "feature": "buyers_replied"
+          },
+          {
+            "text": "The close date has been pushed 7 times.",
+            "feature": "close_date_pushes"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation to address the negative feedback.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "8WB5HXOB",
+      "win_chance": 0.615,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 200761,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 11 negative replies and 9 close-date pushes as the main warning signs despite 6 buyer replies.",
+        "reasons": [
+          {
+            "text": "There have been 11 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "The close date has been pushed 9 times.",
+            "feature": "close_date_pushes"
+          },
+          {
+            "text": "6 buyers have replied.",
+            "feature": "buyers_replied"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation to address the negative tone.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "VRYR5A81",
+      "win_chance": 0.623,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 183393,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 8 negative replies so far. Recent activity shows 1 email sent in the last 14 days and 6 contacts added.",
+        "reasons": [
+          {
+            "text": "There have been 8 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "1 email was sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          },
+          {
+            "text": "6 contacts have been added.",
+            "feature": "contacts_added"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next conversation with the buyer.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "HB740BLB",
+      "win_chance": 0.629,
+      "groundedness": false,
+      "relevance": false,
+      "actionability": false,
+      "retried": false,
+      "llm_calls": 0,
+      "latency_ms": 0,
+      "rejected": [
+        "request failed: timed out"
+      ],
+      "answer": null
+    },
+    {
+      "deal_id": "K63TD0WD",
+      "win_chance": 0.634,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 177310,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 9 negative replies and 8 emails sent in the last 14 days. Six contacts were added, which is a positive signal.",
+        "reasons": [
+          {
+            "text": "There are 9 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "6 contacts were added, providing a positive signal.",
+            "feature": "contacts_added"
+          },
+          {
+            "text": "8 emails were sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next conversation to address the buyer's concerns.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "RTX8ZJXT",
+      "win_chance": 0.639,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 160603,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal is at risk, with frequent recent outreach and repeated negative buyer responses.",
+        "reasons": [
+          {
+            "text": "9 emails sent in the last 14 days",
+            "feature": "emails_sent_14d"
+          },
+          {
+            "text": "9 negative replies so far",
+            "feature": "negative_replies"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a short voicemail that references something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "I35REHYN",
+      "win_chance": 0.644,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 398075,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 9 negative replies and 4 close-date pushes recorded.",
+        "reasons": [
+          {
+            "text": "There are 9 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "The close date has been pushed 4 times.",
+            "feature": "close_date_pushes"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a short phone call that references something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "9B7FS6YL",
+      "win_chance": 0.652,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 453976,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with no meetings in the last 14 days and a recent negative reply. Recent activity is mostly outbound emails, with 4 contacts added and the last buyer reply 5 days ago.",
+        "reasons": [
+          {
+            "text": "There were 0 meetings in the last 14 days.",
+            "feature": "meetings_14d"
+          },
+          {
+            "text": "4 contacts were added.",
+            "feature": "contacts_added"
+          },
+          {
+            "text": "The last buyer reply was 5 days ago.",
+            "feature": "days_since_last_reply"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a short voicemail that references something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "BTRIUUWG",
+      "win_chance": 0.658,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 107387,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated negative replies and heavy recent outreach. Recent activity includes two negative replies.",
+        "reasons": [
+          {
+            "text": "13 negative replies so far",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "4 replies in the last 14 days",
+            "feature": "replies_14d"
+          },
+          {
+            "text": "11 emails sent in the last 14 days",
+            "feature": "emails_sent_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join a follow-up conversation with the buyer to address the negative feedback.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "G39V1X3G",
+      "win_chance": 0.666,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 133215,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 11 negative replies so far. Recent activity includes 6 buyer replies and 2 emails sent in the last 14 days.",
+        "reasons": [
+          {
+            "text": "There have been 11 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "There have been 2 emails sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          },
+          {
+            "text": "There have been 6 buyer replies.",
+            "feature": "buyers_replied"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "JBECEURV",
+      "win_chance": 0.669,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 185528,
+      "rejected": [],
+      "answer": {
+        "summary": "The deal has a low chance of winning, with repeated close-date pushes and only one reply in the last 14 days. The next outreach should use a more direct, specific conversation rather than another generic email.",
+        "reasons": [
+          {
+            "text": "The close date has been pushed 4 times.",
+            "feature": "close_date_pushes"
+          },
+          {
+            "text": "There has been 1 reply in the last 14 days.",
+            "feature": "replies_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a short phone call that references a specific point from the pricing meeting.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "NCMT5KK3",
+      "win_chance": 0.675,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 129951,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with repeated negative replies and substantially more outreach than recent buyer replies.",
+        "reasons": [
+          {
+            "text": "13 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "4 replies in the last 14 days.",
+            "feature": "replies_14d"
+          },
+          {
+            "text": "11 emails sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next conversation with the buyer.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "RTWE19SU",
+      "win_chance": 0.683,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 134207,
+      "rejected": [],
+      "answer": {
+        "summary": "The deal has a low chance of winning, with only 1 meeting and 1 reply in the last 14 days and a 90-hour median buyer response time. The next move is a focused, value-led question rather than another broad email.",
+        "reasons": [
+          {
+            "text": "Only 1 meeting was held in the last 14 days.",
+            "feature": "meetings_14d"
+          },
+          {
+            "text": "There was 1 buyer reply in the last 14 days.",
+            "feature": "replies_14d"
+          },
+          {
+            "text": "The median buyer response time was 90 hours.",
+            "feature": "median_reply_hours"
+          }
+        ],
+        "next_step": {
+          "text": "Send one focused email asking what is new for the buyer, including one relevant insight or customer example, and wait if there is nothing new to add.",
+          "playbook_id": "too-many-emails#make-each-message-earn-its-place"
+        }
+      }
+    },
+    {
+      "deal_id": "DZP0MNRM",
+      "win_chance": 0.689,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 100310,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning. The key factors are 4 close-date pushes and 9 emails sent in the last 14 days.",
+        "reasons": [
+          {
+            "text": "The close date has been pushed 4 times.",
+            "feature": "close_date_pushes"
+          },
+          {
+            "text": "9 emails were sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a phone call or a message through a mutual contact, referencing something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "7MP6KLZO",
+      "win_chance": 0.693,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 489892,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning. The clearest concern is prolonged buyer silence, with 49 days since the last reply and only 1 email sent in the last 14 days.",
+        "reasons": [
+          {
+            "text": "49 days since the last buyer reply, and the latest recorded reply was negative.",
+            "feature": "days_since_last_reply"
+          },
+          {
+            "text": "Only 1 email was sent in the last 14 days, so recent outreach has been limited.",
+            "feature": "emails_sent_14d"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a colleague who knows the main contact to make an introduction to a second person on the buying team, offering a useful finding from similar customers as a reason to reply.",
+          "playbook_id": "reengage-silent-deals#going-around-the-silence"
+        }
+      }
+    },
+    {
+      "deal_id": "YB20NWM1",
+      "win_chance": 0.696,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 176323,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 8 negative replies and 6 buyer replies recorded. The last buyer reply was 0 days ago, so the next move is to change the outreach channel rather than send another email.",
+        "reasons": [
+          {
+            "text": "There are 8 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "6 buyers have replied.",
+            "feature": "buyers_replied"
+          },
+          {
+            "text": "There are 0 days since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a phone call or a message through a mutual contact, using a short voicemail that references something specific to the buyer's project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "G40058T1",
+      "win_chance": 0.701,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 451367,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with buyer engagement present but repeated close-date pushes and negative replies weakening the opportunity.",
+        "reasons": [
+          {
+            "text": "The buyer has replied 4 times.",
+            "feature": "buyers_replied"
+          },
+          {
+            "text": "There have been 5 close-date pushes.",
+            "feature": "close_date_pushes"
+          },
+          {
+            "text": "There have been 5 negative replies.",
+            "feature": "negative_replies"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a phone call to the buyer, leaving a short voicemail that references something specific to their project.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "G7QIQDSA",
+      "win_chance": 0.707,
+      "groundedness": false,
+      "relevance": false,
+      "actionability": false,
+      "retried": false,
+      "llm_calls": 0,
+      "latency_ms": 0,
+      "rejected": [
+        "request failed: timed out"
+      ],
+      "answer": null
+    },
+    {
+      "deal_id": "GZCWM6GK",
+      "win_chance": 0.713,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 376374,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has a low chance of winning, with 12 negative replies so far. Buyer engagement is still present, including 6 buyer replies and a reply 0 days ago.",
+        "reasons": [
+          {
+            "text": "12 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "6 buyers have replied.",
+            "feature": "buyers_replied"
+          },
+          {
+            "text": "0 days since the last buyer reply.",
+            "feature": "days_since_last_reply"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join a follow-up conversation with the buyer.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "JL9ERNVY",
+      "win_chance": 0.719,
+      "groundedness": false,
+      "relevance": false,
+      "actionability": false,
+      "retried": false,
+      "llm_calls": 0,
+      "latency_ms": 0,
+      "rejected": [
+        "request failed: timed out"
+      ],
+      "answer": null
+    },
+    {
+      "deal_id": "W07RZO17",
+      "win_chance": 0.723,
+      "groundedness": false,
+      "relevance": false,
+      "actionability": false,
+      "retried": false,
+      "llm_calls": 0,
+      "latency_ms": 0,
+      "rejected": [
+        "request failed: timed out"
+      ],
+      "answer": null
+    },
+    {
+      "deal_id": "754UOV5F",
+      "win_chance": 0.729,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 376298,
+      "rejected": [],
+      "answer": {
+        "summary": "This deal has recent meeting activity, but heavy outbound email volume and numerous negative replies make the opportunity difficult to progress.",
+        "reasons": [
+          {
+            "text": "3 meetings were held in the last 14 days.",
+            "feature": "meetings_14d"
+          },
+          {
+            "text": "10 emails were sent in the last 14 days.",
+            "feature": "emails_sent_14d"
+          },
+          {
+            "text": "12 negative replies have been recorded.",
+            "feature": "negative_replies"
+          }
+        ],
+        "next_step": {
+          "text": "Replace the next planned email with a short phone call referencing a specific point from the legal meeting.",
+          "playbook_id": "too-many-emails#change-the-channel"
+        }
+      }
+    },
+    {
+      "deal_id": "MOAP4XN7",
+      "win_chance": 0.733,
+      "groundedness": false,
+      "relevance": false,
+      "actionability": false,
+      "retried": false,
+      "llm_calls": 0,
+      "latency_ms": 0,
+      "rejected": [
+        "request failed: timed out"
+      ],
+      "answer": null
+    },
+    {
+      "deal_id": "KBR253C0",
+      "win_chance": 0.736,
+      "groundedness": true,
+      "relevance": true,
+      "actionability": true,
+      "retried": false,
+      "llm_calls": 2,
+      "latency_ms": 263968,
+      "rejected": [],
+      "answer": {
+        "summary": "The deal has a history of negative replies, while recent activity includes positive replies and a close-date change. Buyer engagement is present, but the negative-reply pattern remains the main concern.",
+        "reasons": [
+          {
+            "text": "There have been 15 negative replies so far.",
+            "feature": "negative_replies"
+          },
+          {
+            "text": "There have been 4 replies in the last 14 days.",
+            "feature": "replies_14d"
+          },
+          {
+            "text": "6 buyers have replied.",
+            "feature": "buyers_replied"
+          }
+        ],
+        "next_step": {
+          "text": "Ask a manager or technical colleague to join the next buyer conversation to address the negative tone.",
+          "playbook_id": "negative-replies#bring-in-another-voice"
+        }
+      }
+    },
+    {
+      "deal_id": "8TFYRWZ6",
+      "win_chance": 0.742,
+      "groundedness": false,
+      "relevance": false,
+      "actionability": false,
+      "retried": false,
+      "llm_calls": 0,
+      "latency_ms": 0,
+      "rejected": [
+        "request failed: timed out"
+      ],
+      "answer": null
+    },
+    {
+      "deal_id": "84LN84VM",
+      "win_chance": 0.745,
+      "groundedness": false,
+      "relevance": false,
+      "actionability": false,
+      "retried": false,
+      "llm_calls": 0,
+      "latency_ms": 0,
+      "rejected": [
+        "request failed: timed out"
+      ],
+      "answer": null
+    }
+  ]
+}

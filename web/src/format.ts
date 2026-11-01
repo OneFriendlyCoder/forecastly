@@ -1,4 +1,4 @@
-import type { Factor } from "./api";
+import type { DealEvent, Factor } from "./api";
 
 const count = (value: number, one: string, many = `${one}s`) => `${value} ${value === 1 ? one : many}`;
 
@@ -42,9 +42,27 @@ export function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 }
 
-// ponytail: fixed cut-offs, tune them once scores are checked against real deals
-export function riskLevel(score: number) {
-  if (score < 0.4) return { label: "High risk", level: "high" };
-  if (score < 0.6) return { label: "Medium risk", level: "medium" };
-  return { label: "Lower risk", level: "low" };
+export const RISK_LABELS = { high: "High risk", medium: "Medium risk", low: "Low risk" } as const;
+
+export function formatChange(score: number, previous: number | null) {
+  if (previous === null) return "New";
+  const points = Math.round(score * 100) - Math.round(previous * 100);
+  if (points === 0) return "No change";
+  return `${points > 0 ? "▲" : "▼"} ${Math.abs(points)} pts`;
 }
+
+export function eventText({ event_type: type, payload }: DealEvent): string {
+  switch (type) {
+    case "email_sent": return "Rep sent an email";
+    case "email_replied": return `Buyer replied (${payload.sentiment})`;
+    case "meeting_held": return `${capitalise(String(payload.meeting_type))} meeting held`;
+    case "meeting_no_show": return `Buyer missed the ${payload.meeting_type} meeting`;
+    case "contact_added": return `New contact added: ${String(payload.role).replaceAll("_", " ")}`;
+    case "close_date_changed": return `Close date moved from ${formatDate(String(payload.old))} to ${formatDate(String(payload.new))}`;
+    case "stage_changed": return `Stage changed to ${payload.to}`;
+    case "deal_closed": return `Deal ${payload.outcome}`;
+    default: return type;
+  }
+}
+
+const capitalise = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);

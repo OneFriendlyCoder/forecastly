@@ -37,7 +37,7 @@ services:
     restart: "no"
 
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     environment:
       POSTGRES_USER: pulse
       POSTGRES_PASSWORD: pulse  # local demo only
@@ -94,12 +94,29 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  agent:
+    build: ../agent
+    env_file:
+      - path: ../.env
+        required: false  # without a key the agent returns plain facts
+    environment:
+      API_URL: http://api:8080
+      DATABASE_URL: postgres://pulse:pulse@postgres:5432/pipeline_pulse
+    ports:
+      - "127.0.0.1:8090:8090"  # no login yet, so only this machine can reach it
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+
   web:
     build: ../web
     ports:
       - "127.0.0.1:3000:8080"
     depends_on:
       api:
+        condition: service_started
+      agent:
         condition: service_started
     restart: unless-stopped
 

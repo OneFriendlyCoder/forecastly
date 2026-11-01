@@ -14,7 +14,9 @@ PSQL = ["docker", "compose", "-f", str(ROOT / "deploy/docker-compose.yml"), "exe
 
 def seed(copies=1):
     """copies matches replay.scale_events, which repeats each deal under a new id."""
-    deals = pd.read_parquet(ROOT / "data/processed/deals.parquet")[["deal_id", "product", "amount"]]
+    reps = pd.read_parquet(ROOT / "data/processed/reps.parquet").set_index("rep_id")["name"]
+    deals = pd.read_parquet(ROOT / "data/processed/deals.parquet")
+    deals = deals.assign(owner=deals["owner_id"].map(reps))[["deal_id", "product", "amount", "owner"]]
     tables = [deals, *(deals.assign(deal_id=deals["deal_id"] + f"_c{copy}") for copy in range(2, copies + 1))]
     rows = pd.concat(tables).to_csv(index=False, header=False)
     deadline = time.monotonic() + 30

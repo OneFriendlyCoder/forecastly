@@ -9,7 +9,7 @@ Everything runs on one machine through Docker Compose, defined in `deploy/docker
 | `redpanda` | Kafka-compatible event log | `localhost:19092` from the Mac, `redpanda:9092` inside Docker |
 | `postgres` | Permanent storage | `localhost:5432` |
 | `create-topics` | Creates Kafka topics, then exits | |
-| `deal-state` | The Go service, built from `services/deal-state/Dockerfile` | |
+| `deal-state` | The Python service, built from `services/deal-state/Dockerfile` | |
 
 Redpanda has two addresses because the Mac and the containers reach it differently. Each client must use the address for where it runs.
 
@@ -51,7 +51,7 @@ The Postgres password in the Compose file is a demo value for local use only.
 ## Things to know
 
 - **Tables:** the service creates missing tables when it starts, but it doesn't change existing ones. After a table change, run `make reset`.
-- **Go version:** `go.mod` needs Go 1.26, and the Docker image matches it.
+- **Python version:** the services run on Python 3.11 in Docker.
 - **Python:** use `.venv`. The system Python's NumPy doesn't work with LightGBM.
 - **Running more consumers:** `docker compose -f deploy/docker-compose.yml up -d --scale deal-state=3 deal-state`.
 

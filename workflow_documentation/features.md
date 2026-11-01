@@ -73,4 +73,4 @@ We also removed the date cutoff and the 14-day window by hand, one at a time. Th
 - **`amount` is safe.** It is always the list price, whichever way the deal ends. `close_value` would leak the result, so it isn't used.
 - **Close-date pushes are safe but weak.** The expected date is drawn without looking at the real close date. Pushes barely separate won from lost deals (AUC 0.501).
 - **Very short deals are missing.** The 1,413 finished deals that closed within 7 days have no checkpoint, so the model doesn't learn from them.
-- **Live features aren't covered yet.** The Go service will calculate these features in the scoring step, and that step needs a test that both versions agree on the same events.
+- **Live features aren't covered yet.** The deal-state service calculates them in SQL, and [scoring.md](scoring.md) tests that both versions agree on the same events.

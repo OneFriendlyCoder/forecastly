@@ -72,7 +72,8 @@ def run(name, table, consumers=1, copies=1, **replay_args):
             peak, clear_after_peak = remaining, time.monotonic()
         if cpu is None and time.monotonic() - started > 8:
             cpu = container_cpu()
-        if not sender.is_alive() and remaining == 0:
+        # The exact count, not the backlog: a status number that reads 0 can't end a run early.
+        if not sender.is_alive() and sql("SELECT count(*) AS n FROM events")["n"].iloc[0] >= result["sent"]:
             break
         assert time.monotonic() - started < 900, "did not catch up"
         time.sleep(0.5)

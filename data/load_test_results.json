@@ -3,118 +3,77 @@
     "scenario": "target rate, 1M events/hour",
     "consumers": 1,
     "events": 16800,
-    "total_seconds": 60.5,
-    "events_per_second": 278,
-    "peak_backlog": 0,
-    "backlog_clear_seconds": 0,
-    "scoring_finished_seconds": 60.5,
-    "scores": 9370,
+    "total_seconds": 60.9,
+    "events_per_second": 276,
+    "peak_backlog": 28,
+    "backlog_clear_seconds": 10.4,
+    "scoring_finished_seconds": 60.9,
+    "scores": 8528,
     "latency_seconds": {
-      "p50": 0.021,
-      "p95": 0.024,
-      "p99": 0.395,
-      "worst": 0.993
+      "p50": 0.157,
+      "p95": 0.263,
+      "p99": 0.418,
+      "worst": 0.98
     },
     "event_to_score_seconds": {
-      "p50": 0.141,
-      "p95": 0.237,
-      "p99": 0.252,
-      "worst": 0.374
+      "p50": 0.287,
+      "p95": 0.431,
+      "p99": 0.474,
+      "worst": 0.541
     },
     "cpu_during_run": {
-      "scoring-1": "10.83%",
-      "deal-state-1": "11.74%",
-      "postgres-1": "16.18%",
-      "redpanda-1": "13.83%"
+      "web-1": "0.66%",
+      "scoring-1": "17.45%",
+      "agent-1": "0.16%",
+      "deal-state-1": "15.29%",
+      "api-1": "0.91%",
+      "postgres-1": "3.72%",
+      "redpanda-1": "11.56%"
     }
   },
   {
     "scenario": "as fast as possible",
     "consumers": 1,
     "events": 1319463,
-    "total_seconds": 173.7,
-    "events_per_second": 7597,
-    "peak_backlog": 1298681,
-    "backlog_clear_seconds": 162.3,
-    "scoring_finished_seconds": 173.7,
-    "scores": 450572,
+    "total_seconds": 460.4,
+    "events_per_second": 2866,
+    "peak_backlog": 1311463,
+    "backlog_clear_seconds": 449.0,
+    "scoring_finished_seconds": 460.4,
+    "scores": 457352,
     "latency_seconds": {
-      "p50": 62.898,
-      "p95": 151.166,
-      "p99": 159.743,
-      "worst": 161.838
+      "p50": 193.205,
+      "p95": 421.396,
+      "p99": 443.719,
+      "worst": 448.676
     },
     "event_to_score_seconds": {
-      "p50": 79.704,
-      "p95": 152.932,
-      "p99": 160.723,
-      "worst": 162.374
+      "p50": 227.746,
+      "p95": 425.563,
+      "p99": 444.266,
+      "worst": 449.093
     },
     "cpu_during_run": {
-      "scoring-1": "0.11%",
-      "deal-state-1": "51.61%",
-      "postgres-1": "68.38%",
-      "redpanda-1": "49.47%"
+      "web-1": "0.00%",
+      "scoring-1": "9.86%",
+      "agent-1": "0.20%",
+      "deal-state-1": "93.30%",
+      "api-1": "0.22%",
+      "postgres-1": "19.33%",
+      "redpanda-1": "50.16%"
     }
   },
   {
     "scenario": "as fast as possible",
     "consumers": 3,
     "events": 1319463,
-    "total_seconds": 121.9,
-    "events_per_second": 10824,
-    "peak_backlog": 1251136,
-    "backlog_clear_seconds": 109.4,
-    "scoring_finished_seconds": 127.4,
-    "scores": 448589,
-    "latency_seconds": {
-      "p50": 37.802,
-      "p95": 100.703,
-      "p99": 107.048,
-      "worst": 110.348
-    },
-    "event_to_score_seconds": {
-      "p50": 54.654,
-      "p95": 111.843,
-      "p99": 114.678,
-      "worst": 115.434
-    },
-    "cpu_during_run": {
-      "deal-state-2": "11.46%",
-      "deal-state-3": "12.98%",
-      "scoring-1": "100.47%",
-      "deal-state-1": "45.76%",
-      "postgres-1": "44.83%",
-      "redpanda-1": "51.86%"
-    }
+    "finished": false,
+    "note": "Stopped at the 15-minute limit with 1,108,000 events stored and none lost. About 1,230 events/s on average."
   },
   {
     "scenario": "burst",
     "consumers": 1,
-    "events": 680000,
-    "total_seconds": 112.7,
-    "events_per_second": 6035,
-    "peak_backlog": 428175,
-    "backlog_clear_seconds": 67.7,
-    "scoring_finished_seconds": 112.7,
-    "scores": 215392,
-    "latency_seconds": {
-      "p50": 25.578,
-      "p95": 49.363,
-      "p99": 52.37,
-      "worst": 53.399
-    },
-    "event_to_score_seconds": {
-      "p50": 25.055,
-      "p95": 49.817,
-      "p99": 52.819,
-      "worst": 53.958
-    },
-    "cpu_during_run": {
-      "scoring-1": "40.62%",
-      "deal-state-1": "24.13%",
-      "postgres-1": "25.70%",
-      "redpanda-1": "19.58%"
-    }
+    "finished": false,
+    "note": "Not run, because the previous scenario stopped the test."
   }
 ]
