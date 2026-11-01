@@ -10,6 +10,12 @@ The Deal Risk Agent turns a score into plain advice. It says why a deal looks at
 4. The fact guard checks the reply. A failed check sends the problems back for one retry.
 5. If it still fails, or the LLM can't be reached, code builds a plain facts answer that can't contain invented claims.
 
+## Live progress
+
+The dashboard uses `POST /explain/{deal_id}/stream`, which sends one JSON object per line: progress steps, then the final result or an error. `POST /explain/{deal_id}` stays as plain JSON for the evaluation script.
+
+Only steps are streamed, never the answer's words. The fact guard runs on the finished answer, so streaming the text would show unchecked claims. If the reader leaves, the agent still finishes and saves a grounded answer.
+
 ## Files
 
 | File | Purpose |
@@ -24,11 +30,11 @@ The Deal Risk Agent turns a score into plain advice. It says why a deal looks at
 
 ## Provider
 
-The agent uses NVIDIA's free tier with `minimaxai/minimax-m3.1-flash` and `nvidia/nemotron-3-embed-1b`. The API uses the OpenAI format, so `LLM_BASE_URL`, `LLM_MODEL` and `EMBED_MODEL` can point it at Claude, Ollama or anything compatible, though another embedding size needs a schema change.
+The agent writes with Claude Haiku 5.5 (`claude-haiku-5-5`) at low effort, through the Anthropic SDK. Playbook search still uses NVIDIA's `nvidia/nemotron-3-embed-1b`, as Claude has no embeddings API, so both keys are needed. Setting `LLM_MODEL` to another Claude model, or to an OpenAI-compatible one such as `minimaxai/minimax-m3.1-flash`, changes the writer with no code change. Another embedding size needs a schema change.
 
-The key lives in `.env`, which is ignored by git and Docker builds. Without a key, the stack still runs and the agent returns plain facts. `make up` indexes the playbook when a key is present.
+The keys live in `.env`, which is ignored by git and Docker builds. Without a key, the stack still runs and the agent returns plain facts. `make up` indexes the playbook when a key is present.
 
-The free tier is for prototyping. Only sample and simulated deal data and the playbook are sent to NVIDIA, and real customer data would need a review first.
+Only sample and simulated deal data and the playbook are sent to Anthropic and NVIDIA. Real customer data would need a review first.
 
 ## Fact guard
 
@@ -72,7 +78,7 @@ This run covered 50 deals with the real model. Full answers are in `data/agent_e
 
 All 7 failures were timeouts, not bad answers. Every answer that came back passed all three checks with no retry. Each took 2 LLM calls.
 
-**Speed depends on NVIDIA's free tier.** Early sample runs took about a minute per answer, and later ones took several minutes. Rejected test requests took 95 seconds to 15 minutes to come back with the evaluation stopped, which points to queueing at the provider. That's strong evidence, but not proof.
+**Speed depends on the model.** With Claude Haiku 5.5, a 20-deal sample took 6.4 seconds at p50 and 9.8 seconds at p95, with 2.35 LLM calls an answer. The same agent on NVIDIA's free tier took 2 to 5 minutes. All 20 answers passed the fact guard, and 25% needed a rewrite, mostly for cause words. The prompt and guard were tuned on the NVIDIA model.
 
 **The results predate the 5-minute limit.** Only 34 of these 50 answers finished inside 5 minutes, so at the same speed the other 16 would now show plain facts. The live test after the change gave a grounded answer in 3.5 minutes.
 
@@ -84,7 +90,7 @@ All 7 failures were timeouts, not bad answers. Every answer that came back passe
 
 - **Slow:** answers took from under a minute to about 8 minutes, which is why it's a button and answers are saved. After 5 minutes, the agent stops and shows plain facts.
 - **Late events:** saved answers are tied to the deal's latest event time, so a late event can change the score and still reuse the old answer.
-- **Rate limits:** the free tier is reported at about 40 requests a minute. The agent backs off and retries, but heavy use would still slow it down.
+- **Rate limits:** the agent retries, but heavy use would still slow it down.
 - **Prompt injection:** deal data is passed to the model. The agent can only read and its tools can't change anything, but real CRM text would need more care.
 - **No login:** the port is bound to this machine only.
 - **Reasons aren't causes:** the answers describe what moved the model, and the rep has to judge the real problem.
@@ -92,5 +98,5 @@ All 7 failures were timeouts, not bad answers. Every answer that came back passe
 ## Differences from the project plan
 
 - **Shorter playbook:** 10 short guides, instead of 10-15 pages.
-- **No cost tracking:** the free tier has no per-call price, so only response time and LLM calls are tracked.
+- **No cost tracking:** only response time and LLM calls are tracked, though Claude calls now cost money. Tokens used per answer haven't been measured.
 - **Evaluation cases are built live:** each deal's own top factors are the expected reasons, instead of a hand-written set.

@@ -18,6 +18,14 @@ Filters are kept in the address, so reloading, sharing a link and the back butto
 - An "Explain this deal" button for open deals (see [agent.md](agent.md)). It resets when the score changes, so an old explanation can't sit beside a new score.
 - The top 3 reasons, a chart of the score over time, activity counts, and a timeline of the 12 newest events. The chart has a table view for anyone who can't read it visually.
 
+## Branding and themes
+
+The dashboard is named Forecastly and is marked as a demo for Outreach, using their logo from outreach.ai. The code, containers and these docs still use the working name Pipeline Pulse. Light mode is the default, and the button in the header switches to dark mode and remembers the choice.
+
+## Live strip
+
+Every page starts with a strip that refreshes every 2 seconds. It shows whether events are arriving, the simulated date, events stored, events a second, scores made, event-to-score time, the pipeline's stages and the newest events. It links to a deal worth following during a replay. See [demo.md](demo.md).
+
 ## How it works
 
 - **Data:** the pages call the [API](api.md) and refresh every 5 seconds, so scores change on screen during a replay. If a refresh fails, the last data stays visible beside a warning.

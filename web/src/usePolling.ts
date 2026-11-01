@@ -5,7 +5,7 @@ const INTERVAL_MS = 5000;
 type State<T> = { data?: T; error?: unknown; updatedAt?: number };
 
 /** Refetches on a timer. The last good data stays on screen through refreshes, new filters and failures. */
-export function usePolling<T>(load: () => Promise<T>, key: string): State<T> {
+export function usePolling<T>(load: () => Promise<T>, key: string, interval = INTERVAL_MS): State<T> {
   const [state, setState] = useState<State<T>>({});
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function usePolling<T>(load: () => Promise<T>, key: string): State<T> {
       } catch (error) {
         if (active) setState((previous) => ({ ...previous, error }));
       }
-      if (active) timer = setTimeout(tick, INTERVAL_MS);
+      if (active) timer = setTimeout(tick, interval);
     };
     tick();
     return () => {

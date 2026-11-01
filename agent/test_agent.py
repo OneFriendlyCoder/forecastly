@@ -5,11 +5,13 @@ import sys
 import time
 import urllib.error
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).parent))
 from agent import cache_key, compact_event, explain, guard, known_numbers, parse
-from llm import LLM, LLMError
+from tools import DEFINITIONS
+from llm import LLM, LLMError, from_claude, to_claude
 
 CHUNK = {"chunk_id": "negative-replies#move", "guide": "Negative replies", "title": "Move", "body": "Offer a ten minute call."}
 EVENT = {"event_type": "email_replied", "occurred_at": "2017-12-05T10:00:00+00:00", "payload": {"sentiment": "negative"}}
@@ -61,6 +63,44 @@ def run(*script):
 
 def changed(**fields):
     return {**GOOD, **fields}
+
+
+def check_claude_format():
+    def block(**fields):
+        return SimpleNamespace(**fields)
+
+    reply = SimpleNamespace(stop_reason="tool_use", content=[block(type="thinking", thinking=""), block(type="text", text="Looking."),
+                                                             block(type="tool_use", id="t1", name="search_playbook", input={"query": "q"}),
+                                                             block(type="tool_use", id="t2", name="get_recent_events", input={"deal_id": "D1"})])
+    message = from_claude(reply)
+    assert message["content"] == "Looking." and json.loads(message["tool_calls"][0]["function"]["arguments"]) == {"query": "q"}
+    system, turns, tools = to_claude([{"role": "system", "content": "s"}, {"role": "user", "content": "u"},
+                                      {"role": "assistant", "content": "Looking.", "blocks": reply.content},
+                                      {"role": "tool", "tool_call_id": "t1", "content": "a"},
+                                      {"role": "tool", "tool_call_id": "t2", "content": "b"}], DEFINITIONS)
+    assert system == "s" and [turn["role"] for turn in turns] == ["user", "assistant", "user"]
+    assert turns[1]["content"] is reply.content  # the thinking block goes back untouched
+    assert [result["tool_use_id"] for result in turns[2]["content"]] == ["t1", "t2"]
+    assert tools[0]["name"] == "get_recent_events" and tools[0]["input_schema"]["required"] == ["deal_id"]
+    for reason in ("refusal", "max_tokens"):
+        try:
+            from_claude(SimpleNamespace(stop_reason=reason, content=[]))
+            raise AssertionError("should have failed")
+        except LLMError:
+            pass
+
+
+def check_a_rounded_score_is_allowed():
+    assert 0.2 in known_numbers(DEAL, []) and 20 in known_numbers(DEAL, [])
+    assert 0.2 in known_numbers({**DEAL, "score": 0.204}, []) and 0.28 in known_numbers({**DEAL, "score": 0.2841}, [])
+
+
+def check_steps_are_reported_without_answer_text():
+    steps = []
+    explain(DEAL, FakeLLM(EVENTS, SEARCH, text(changed(summary="It has 9 replies.")), text(GOOD)), FakeTools(), steps.append)
+    assert steps == ["Reading the deal's score and factors", "Checking recent events", "Reviewing what it found",
+                     "Searching the sales playbook", "Reviewing what it found", "Fact-checking the answer",
+                     "Fact check failed, rewriting the answer", "Fact-checking the answer"], steps
 
 
 def check_good_answer_passes():
@@ -248,6 +288,9 @@ def main():
     check_a_broken_tool_doesnt_crash()
     check_parse_tolerates_wrapping()
     check_llm_retries_rate_limits()
+    check_steps_are_reported_without_answer_text()
+    check_claude_format()
+    check_a_rounded_score_is_allowed()
     print("all agent checks passed")
 
 

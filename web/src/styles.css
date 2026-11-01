@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   --page: #f5f4f0;
   --surface: #fcfcfb;
   --text: #0b0b0b;
@@ -16,23 +16,22 @@
   --low-text: #006300;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page: #121211;
-    --surface: #1a1a19;
-    --text: #f0efec;
-    --text-secondary: #c3c2b7;
-    --text-muted: #989690;
-    --grid: #2c2c2a;
-    --series-1: #3987e5;
-    --link: #7fb2f0;
-    --high-bg: #4a1f1e;
-    --high-text: #f6b9b6;
-    --medium-bg: #453411;
-    --medium-text: #f5d58e;
-    --low-bg: #1d3a1d;
-    --low-text: #a9e0a9;
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #121211;
+  --surface: #1a1a19;
+  --text: #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted: #989690;
+  --grid: #2c2c2a;
+  --series-1: #3987e5;
+  --link: #7fb2f0;
+  --high-bg: #4a1f1e;
+  --high-text: #f6b9b6;
+  --medium-bg: #453411;
+  --medium-text: #f5d58e;
+  --low-bg: #1d3a1d;
+  --low-text: #a9e0a9;
 }
 
 * { box-sizing: border-box; }
@@ -48,10 +47,26 @@ a { color: var(--link); }
 button, select, input { font: inherit; color: var(--text); }
 :focus-visible { outline: 2px solid var(--series-1); outline-offset: 2px; }
 
-header { padding: 14px 24px; background: var(--surface); border-bottom: 1px solid var(--grid); }
-header a { color: var(--text); font-weight: 650; text-decoration: none; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 24px; background: var(--surface); border-bottom: 1px solid var(--grid); }
+.brand { color: var(--text); font-size: 19px; font-weight: 700; letter-spacing: -0.01em; text-decoration: none; }
+.header-side { display: flex; align-items: center; gap: 16px; }
+.theme-toggle { padding: 5px 10px; background: none; border: 1px solid var(--grid); border-radius: 6px; font-size: 13px; cursor: pointer; }
+.demo-for { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 13px; white-space: nowrap; }
+.demo-for img { display: block; height: 42px; padding: 4px 8px; background: #fff; border-radius: 6px; } /* the logo's text is near-black, so it stays on white in both themes */
 
 main { max-width: 1240px; margin: 0 auto; padding: 24px; }
+
+.live { padding: 10px 24px; background: var(--surface); border-bottom: 1px solid var(--grid); font-size: 13.5px; }
+.live-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; }
+.live-on { color: var(--low-text); }
+.live-off { color: var(--text-muted); }
+.live-stat { font-weight: 600; font-variant-numeric: tabular-nums; }
+.live-stat small { display: block; font-size: 11.5px; font-weight: 400; color: var(--text-muted); }
+.live-follow { margin-left: auto; color: var(--link); font-weight: 600; }
+.live-flow, .live-feed { display: flex; flex-wrap: wrap; margin: 8px 0 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--text-muted); }
+.live-flow li:not(:last-child)::after { content: "→"; margin: 0 8px; }
+.live-feed { gap: 4px 24px; color: var(--text-secondary); }
+.live-feed a { color: var(--link); }
 footer { max-width: 1240px; margin: 0 auto; padding: 0 24px 32px; color: var(--text-muted); font-size: 13px; }
 
 h1 { margin: 0 0 2px; font-size: 26px; line-height: 1.2; }
@@ -120,7 +135,13 @@ th, td { padding: 10px 14px; border-bottom: 1px solid var(--grid); }
 .arrow { color: var(--text-secondary); font-weight: 700; }
 
 .explain .note { margin: 0 0 12px; }
-.explain button:disabled { cursor: progress; color: var(--text-muted); }
+.explain .outdated { margin: 10px 0 0; }
+.explain .steps { margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.explain .steps li { padding: 3px 0; }
+.explain .steps .finished { color: var(--text-muted); }
+.explain .steps .finished::before { content: "✓ "; }
+.explain .steps .current { font-weight: 600; }
+.explain .steps .current::before { content: "● "; }
 .explain ul { margin: 0 0 12px; padding-left: 18px; }
 .explain .next { margin: 0; padding: 10px 12px; background: var(--page); border-radius: 6px; }
 .explain small { display: block; margin-top: 10px; color: var(--text-muted); font-size: 12.5px; }

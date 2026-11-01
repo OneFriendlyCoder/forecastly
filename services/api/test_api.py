@@ -119,6 +119,14 @@ def check_events(latest):
     print(f"ok: events match Postgres ({len(times)} events, newest first)")
 
 
+def check_live():
+    status, body = get("/live")
+    assert status == 200 and body["events"] == sql("SELECT count(*) AS n FROM events")["n"][0]
+    assert body["scores"] == sql("SELECT count(*) AS n FROM deal_scores")["n"][0]
+    assert body["event_to_score_seconds"] > 0 and len(body["recent"]) == 4
+    print("ok: /live matches what Postgres holds")
+
+
 def check_bad_requests():
     assert get("/health") == (200, {"status": "ok"})
     assert get("/deals/nope")[0] == 404
@@ -138,6 +146,7 @@ def main():
     check_deal(latest)
     check_history(latest)
     check_events(latest)
+    check_live()
     check_bad_requests()
 
 

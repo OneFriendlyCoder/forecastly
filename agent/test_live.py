@@ -40,14 +40,25 @@ def post(path):
         return error.code, json.load(error)
 
 
+def stream(path):
+    """Returns the progress steps and the final line."""
+    request = urllib.request.Request(AGENT + path, method="POST")
+    with urllib.request.urlopen(request, timeout=360) as response:
+        lines = [json.loads(line) for line in response]
+    assert all("step" in line for line in lines[:-1]), lines
+    return [line["step"] for line in lines[:-1]], lines[-1]
+
+
 def top_deal():
     with urllib.request.urlopen("http://localhost:8080/deals/at-risk?limit=1", timeout=10) as response:
         return json.load(response)["deals"][0]["deal_id"]
 
 
 def check_explanation(deal_id):
-    status, first = post(f"/explain/{deal_id}")
-    assert status == 200 and not first["cached"], first
+    steps, last = stream(f"/explain/{deal_id}/stream")
+    first = last["result"]
+    assert steps and not first["cached"], last
+    print(f"ok: {len(steps)} progress steps arrived")
     print(json.dumps(first, indent=2))
     assert first["grounded"], f"answer failed the guard: {first.get('why_not')}"
     cited = first["answer"]["next_step"]["playbook_id"]
@@ -61,6 +72,7 @@ def check_explanation(deal_id):
 
 def check_errors():
     assert post("/explain/nope")[0] == 404
+    assert post("/explain/nope/stream")[0] == 404
     untouched = sql("SELECT d.deal_id FROM deals d LEFT JOIN deal_scores s USING (deal_id) WHERE s.deal_id IS NULL LIMIT 1").iloc[0, 0]
     assert post(f"/explain/{untouched}")[0] == 409
     print("ok: unknown deals get 404, unscored deals get 409")
