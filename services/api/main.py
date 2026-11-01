@@ -124,6 +124,33 @@ SELECT json_build_object('deal_id', d.deal_id, 'events', (
 ))::text
 FROM deals d WHERE d.deal_id = %(id)s"""
 
+# Built from deal_health and the newest scores, as this runs every couple of seconds during a replay.
+LIVE_SQL = """
+WITH h AS (
+    SELECT sum(email_sent + email_replied + meeting_held + meeting_no_show + contact_added
+               + close_date_changed + stage_changed + deal_closed) AS events,
+           max(last_event_at) AS simulated_at, max(updated_at) AS updated_at
+    FROM deal_health
+), latest AS (
+    SELECT scored_at - event_published_at AS took FROM deal_scores ORDER BY scored_at DESC LIMIT 200
+)
+SELECT json_build_object(
+    'events', coalesce(h.events, 0),
+    'simulated_at', h.simulated_at,
+    'seconds_since_update', extract(epoch FROM now() - h.updated_at),
+    'scores', (SELECT count(*) FROM deal_scores),
+    'event_to_score_seconds', (SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY extract(epoch FROM took)) FROM latest),
+    'recent', (
+        SELECT coalesce(json_agg(t), '[]')
+        FROM (
+            SELECT e.deal_id, e.event_id, e.event_type, e.occurred_at, e.payload
+            FROM deal_health d JOIN events e ON e.event_id = d.last_event_id
+            ORDER BY d.updated_at DESC, d.last_event_at DESC LIMIT 4
+        ) t
+    )
+)::text
+FROM h"""
+
 pool = ConnectionPool(os.environ.get("DATABASE_URL", "postgres://pulse:pulse@localhost:5432/pipeline_pulse"),
                       open=False, timeout=QUERY_TIMEOUT_MS / 1000,
                       kwargs={"options": f"-c statement_timeout={QUERY_TIMEOUT_MS}"})
@@ -173,6 +200,11 @@ def health():
     except (psycopg.Error, PoolTimeout):
         return error(503, "database unavailable")
     return {"status": "ok"}
+
+
+@app.get("/live")
+def live():
+    return respond(LIVE_SQL, None)
 
 
 @app.get("/deals/summary")

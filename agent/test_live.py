@@ -16,16 +16,37 @@ from replay import load_events, replay
 from test_e2e import BROKERS, sql, wait_until_scored
 
 AGENT = "http://localhost:8090"
+SEARCHES = {  # a real embedding setting bug once scored 4 of 10 here, with no error
+    "negative replies from the buyer": "negative-replies",
+    "buyer has gone silent, no reply for weeks": "reengage-silent-deals",
+    "close date keeps moving": "close-date-hygiene",
+    "buyer missed a meeting, no-show": "missed-meetings",
+    "buyers are replying slowly": "slow-reply-times",
+    "only one buyer is involved": "multithread-the-account",
+    "many emails sent with few replies": "too-many-emails",
+    "pricing objection": "pricing-objections",
+    "deal stalled at late stage": "stalled-late-stage",
+    "should we keep this deal open": "qualify-or-close",
+}
 TOOLS = {"list_at_risk_deals", "get_deal", "get_recent_events", "search_playbook", "explain_deal"}
 
 
 def post(path):
     request = urllib.request.Request(AGENT + path, method="POST")
     try:
-        with urllib.request.urlopen(request, timeout=300) as response:
+        with urllib.request.urlopen(request, timeout=360) as response:
             return response.status, json.load(response)
     except urllib.error.HTTPError as error:
         return error.code, json.load(error)
+
+
+def stream(path):
+    """Returns the progress steps and the final line."""
+    request = urllib.request.Request(AGENT + path, method="POST")
+    with urllib.request.urlopen(request, timeout=360) as response:
+        lines = [json.loads(line) for line in response]
+    assert all("step" in line for line in lines[:-1]), lines
+    return [line["step"] for line in lines[:-1]], lines[-1]
 
 
 def top_deal():
@@ -34,8 +55,10 @@ def top_deal():
 
 
 def check_explanation(deal_id):
-    status, first = post(f"/explain/{deal_id}")
-    assert status == 200 and not first["cached"], first
+    steps, last = stream(f"/explain/{deal_id}/stream")
+    first = last["result"]
+    assert steps and not first["cached"], last
+    print(f"ok: {len(steps)} progress steps arrived")
     print(json.dumps(first, indent=2))
     assert first["grounded"], f"answer failed the guard: {first.get('why_not')}"
     cited = first["answer"]["next_step"]["playbook_id"]
@@ -49,6 +72,7 @@ def check_explanation(deal_id):
 
 def check_errors():
     assert post("/explain/nope")[0] == 404
+    assert post("/explain/nope/stream")[0] == 404
     untouched = sql("SELECT d.deal_id FROM deals d LEFT JOIN deal_scores s USING (deal_id) WHERE s.deal_id IS NULL LIMIT 1").iloc[0, 0]
     assert post(f"/explain/{untouched}")[0] == 409
     print("ok: unknown deals get 404, unscored deals get 409")
@@ -60,8 +84,12 @@ async def check_mcp(deal_id):
         assert TOOLS <= names, names
         result = await client.call_tool("get_deal", {"deal_id": deal_id})
         assert deal_id in str(result.content)
-        found = await client.call_tool("search_playbook", {"query": "buyer stopped replying"})
-        assert "silent" in str(found.content).lower(), "the search should find the silent deals guide"
+        hits = 0
+        for query, guide in SEARCHES.items():
+            found = await client.call_tool("search_playbook", {"query": query})
+            hits += guide in str(found.content)
+        assert hits >= 9, f"playbook search found {hits} of {len(SEARCHES)} expected guides"
+        print(f"ok: playbook search found {hits} of {len(SEARCHES)} expected guides")
     print(f"ok: an MCP client sees {len(names)} tools and can call them")
 
 

@@ -7,6 +7,7 @@
 | Endpoint | Returns |
 |---|---|
 | `GET /health` | `{"status":"ok"}`, or 503 if Postgres can't be reached |
+| `GET /live` | Events stored, scores made, the simulated date, time since the last update, p95 event-to-score time over the newest 200 scores, and the 4 newest events |
 | `GET /deals/summary` | Open deal totals, the count and amount per risk level, and the lists of products and reps |
 | `GET /deals/at-risk` | Open deals with the riskiest first, with `total`, rep, risk level, previous score and top 3 reasons |
 | `GET /deals/{id}` | One deal's latest score, reasons, features and activity counts |

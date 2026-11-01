@@ -34,7 +34,7 @@ Maven + Enron data -> simulator -> events.parquet
                                    FastAPI API
                                         |
                                         v
-                                   React dashboard <-> Agent <-> NVIDIA LLM
+                                   React dashboard <-> Agent <-> Claude LLM
                                                        |
                                                        v
                                                   MCP clients
@@ -56,6 +56,7 @@ Maven + Enron data -> simulator -> events.parquet
 | Dashboard | Done | [dashboard.md](dashboard.md) |
 | Agent over MCP | Done | [agent.md](agent.md) |
 | CRM connector | Not started | |
+| Live demo | Done | [demo.md](demo.md) |
 | Future scope | Planned | [future_scope.md](future_scope.md) |
 | CI | Not started | |
 
@@ -74,7 +75,7 @@ python3 -m venv .venv
 
 make snapshots
 make train
-cp .env.example .env                          # then add your NVIDIA key; optional, used by the agent
+cp .env.example .env                          # then add your Claude and NVIDIA keys; optional, used by the agent
 make up
 .venv/bin/python ml/simulator/replay.py --fast
 ```

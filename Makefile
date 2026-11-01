@@ -1,6 +1,9 @@
 COMPOSE := docker compose -f deploy/docker-compose.yml
 
-.PHONY: up down reset check snapshots train test test-e2e test-faults test-scoring test-api test-dashboard test-agent eval-agent load-test
+.PHONY: up down reset check snapshots train test test-e2e test-faults test-scoring test-api test-dashboard test-agent eval-agent load-test demo-setup demo demo-check
+
+DEMO_SPEED ?= 0.5  # real seconds per simulated day; much faster risks a backlog on a laptop
+KEEP_AWAKE := $(shell command -v caffeinate >/dev/null && echo caffeinate -i)
 
 up:
 	$(COMPOSE) up -d --wait redpanda postgres
@@ -8,6 +11,19 @@ up:
 	$(COMPOSE) up -d --build deal-state scoring api agent web
 	.venv/bin/python services/deal-state/seed_deals.py
 	-$(COMPOSE) exec -T agent python index_playbook.py  # needs the key in .env
+
+demo-setup:  # wipes local Kafka and Postgres data, then leaves an empty dashboard
+	$(MAKE) reset up
+	@echo "Ready: open http://localhost:3000, then run make demo"
+
+demo:  # run demo-setup first; add FAULTS=--faults to send duplicate, late and broken events too
+	$(KEEP_AWAKE) .venv/bin/python ml/simulator/replay.py --seconds-per-day $(DEMO_SPEED) $(FAULTS)
+
+demo-check:  # events and scores stored, events still waiting, and events rejected
+	@$(COMPOSE) exec -T postgres psql -U pulse -d pipeline_pulse -Atc "SELECT 'stored: ' || count(*) || ' events' FROM events; SELECT 'scored: ' || count(*) || ' times' FROM deal_scores"
+	@$(COMPOSE) exec -T redpanda rpk group describe deal-state | awk '/TOTAL-LAG/ {print "waiting for deal-state: " $$2}'
+	@$(COMPOSE) exec -T redpanda rpk group describe scoring | awk '/TOTAL-LAG/ {print "waiting for scoring: " $$2}'
+	@$(COMPOSE) exec -T redpanda rpk topic describe activity.events.dlq -p | awk 'NR > 1 {n += $$NF} END {print "rejected: " n}'
 
 down:
 	$(COMPOSE) down

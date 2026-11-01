@@ -11,10 +11,13 @@ TIME_LIMIT_SECONDS = 300  # past this, the reader gets plain facts and the work 
 MIN_REASONS = 2
 EVENTS_SHOWN = 10
 WINDOW_DAYS = 14.0  # the features' "last 14 days"
+TOOL_STEPS = {"get_recent_events": "Checking recent events", "search_playbook": "Searching the sales playbook"}
 
-SYSTEM = """Think briefly, then answer. You explain to a sales rep why a deal has a low chance of winning, and suggest one next step.
+SYSTEM = """Think briefly, then answer. You explain to a sales rep what is helping or hurting a deal's chance of winning, and suggest one next step. Deals can be
+healthy or at risk, so describe this one as its score shows. Give the score as a percentage.
 
-Use get_recent_events to see what happened. Use search_playbook to find advice, and base the next step on it.
+Use get_recent_events to see what happened. Use search_playbook to find advice for the deal's own largest factors, and
+base the next step on the section that fits this deal best.
 Only state facts that appear in the data you were given. Never invent numbers, names or events.
 Don't quote calendar dates or work out new numbers. Use the day counts already in the features.
 The factors show what moved a statistical model's score. Don't say what caused the deal's trouble, and never use the
@@ -53,9 +56,9 @@ def walk_numbers(value):
 
 def known_numbers(deal, sources):
     """Every number the agent has seen, as written and rounded, as a person would quote it."""
-    seen = {*walk_numbers(deal), *walk_numbers(sources), WINDOW_DAYS}
+    seen = {*walk_numbers(deal), *walk_numbers(sources), WINDOW_DAYS, float(EVENTS_SHOWN)}  # "the last 10 events" is true
     if deal.get("score") is not None:
-        seen.add(float(round(deal["score"] * 100)))
+        seen |= {float(round(deal["score"] * 100)), round(deal["score"], 2)}  # 20% or 0.20
     return seen | {round(n, 1) for n in seen} | {float(round(n)) for n in seen}
 
 
@@ -133,28 +136,40 @@ def run_tool(call, tools):
         return {"error": f"tool failed: {type(error).__name__}"}
 
 
-def explain(deal, llm, tools):
-    """deal is a get_deal result with a score. The result is always safe to show."""
+def cache_key(deal, llm_model):
+    """Includes the score, because a late event can change it without changing the deal's latest event time."""
+    return deal["deal_id"], deal["as_of"], deal["model_version"], llm_model, deal["score"]
+
+
+def explain(deal, llm, tools, on_step=lambda step: None):
+    """deal is a get_deal result with a score. The result is always safe to show.
+    on_step hears what the agent is doing. It never gets answer text, as that isn't checked until the end."""
     facts = {key: deal.get(key) for key in ("deal_id", "product", "amount", "score", "factors", "activity")}
     messages = [{"role": "system", "content": SYSTEM},
                 {"role": "user", "content": f"Explain this deal.\n{json.dumps(facts)}"}]
     sources, chunks, retried, calls, rejected = [], set(), False, 0, []
     deadline = time.monotonic() + TIME_LIMIT_SECONDS
+    step = "Reading the deal's score and factors"
     try:
         for _ in range(MAX_STEPS):
+            on_step(step)
             calls += 1
             message = llm.chat(messages, DEFINITIONS, deadline)
             tool_calls = message.get("tool_calls") or []
             if tool_calls:
-                messages.append({"role": "assistant", "content": message.get("content") or "", "tool_calls": tool_calls})
+                messages.append({"role": "assistant", "content": message.get("content") or "", "tool_calls": tool_calls,
+                                 "blocks": message.get("blocks")})
                 for call in tool_calls:
+                    on_step(TOOL_STEPS.get(call["function"]["name"], "Using a tool"))
                     result = run_tool(call, tools)
                     sources.append(result)
                     if call["function"]["name"] == "search_playbook" and isinstance(result, list):
                         chunks |= {chunk["chunk_id"] for chunk in result}
                     messages.append({"role": "tool", "tool_call_id": call["id"], "content": json.dumps(result)})
+                step = "Reviewing what it found"
                 continue
 
+            on_step("Fact-checking the answer")
             answer = parse(message.get("content"))
             problems = guard(answer, deal, sources, chunks)
             if not problems:
@@ -162,8 +177,8 @@ def explain(deal, llm, tools):
             rejected += problems
             if retried:
                 return {**plain_facts(deal, "; ".join(problems)), "retried": True, "llm_calls": calls, "rejected": rejected}
-            retried = True
-            messages.append({"role": "assistant", "content": message.get("content") or ""})
+            retried, step = True, "Fact check failed, rewriting the answer"
+            messages.append({"role": "assistant", "content": message.get("content") or "", "blocks": message.get("blocks")})
             messages.append({"role": "user", "content": "Your answer failed a fact check: " + "; ".join(problems)
                              + ". Reply again with corrected JSON only."})
         return {**plain_facts(deal, "ran out of steps"), "retried": retried, "llm_calls": calls, "rejected": rejected}

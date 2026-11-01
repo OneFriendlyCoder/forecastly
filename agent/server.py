@@ -1,14 +1,16 @@
 """Serves explanations to the dashboard and the agent's tools over MCP."""
 import json
+import queue
+import threading
 import time
 
 import psycopg
 import uvicorn
 from mcp.server.mcpserver import MCPServer
 from starlette.concurrency import run_in_threadpool
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, StreamingResponse
 
-from agent import explain
+from agent import cache_key, explain
 from llm import LLM
 from tools import DealNotFound, Tools
 
@@ -17,29 +19,49 @@ tools = Tools(llm)
 mcp = MCPServer("pipeline-pulse", instructions="Read deal risk scores, activity and sales playbook advice.")
 
 FIND = """SELECT answer, grounded, latency_ms FROM deal_explanations
-WHERE deal_id = %s AND as_of = %s AND model_version = %s AND llm_model = %s"""
-SAVE = """INSERT INTO deal_explanations (deal_id, as_of, model_version, llm_model, answer, grounded, latency_ms)
-VALUES (%s, %s, %s, %s, %s, %s, %s)
-ON CONFLICT (deal_id, as_of, model_version, llm_model) DO UPDATE SET
+WHERE deal_id = %s AND as_of = %s AND model_version = %s AND llm_model = %s AND score = %s"""
+SAVE = """INSERT INTO deal_explanations (deal_id, as_of, model_version, llm_model, score, answer, grounded, latency_ms)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+ON CONFLICT (deal_id, as_of, model_version, llm_model, score) DO UPDATE SET
     answer = EXCLUDED.answer, grounded = EXCLUDED.grounded, latency_ms = EXCLUDED.latency_ms"""
 
 
-def explain_deal_cached(deal_id, fresh=False):
+def explain_deal_cached(deal_id, fresh=False, on_step=lambda step: None):
     """An answer stays valid until the deal's score changes. Fallbacks aren't kept, so a later try can do better."""
     deal = tools.get_deal(deal_id)
     if deal["score"] is None:
         return None
-    key = (deal_id, deal["as_of"], deal["model_version"], llm.model)
+    key = cache_key(deal, llm.model)
     with psycopg.connect(tools.database_url) as db:
         row = None if fresh else db.execute(FIND, key).fetchone()
         if row:
             return {"grounded": row[1], "answer": row[0], "cached": True, "latency_ms": row[2]}
         started = time.monotonic()
-        result = explain(deal, llm, tools)
+        result = explain(deal, llm, tools, on_step)
         latency_ms = round((time.monotonic() - started) * 1000)
         if result["grounded"]:
             db.execute(SAVE, (*key, json.dumps(result["answer"]), True, latency_ms))
     return {**result, "cached": False, "latency_ms": latency_ms}
+
+
+def stream_explanation(deal_id, fresh):
+    """One JSON object per line: any number of {"step"}, then {"result"} or {"error"}.
+    If the reader leaves, the agent still finishes, so a grounded answer is saved for next time."""
+    lines = queue.SimpleQueue()
+
+    def work():
+        try:
+            result = explain_deal_cached(deal_id, fresh, lambda step: lines.put({"step": step}))
+            lines.put({"result": result})
+        except Exception as error:  # headers are already sent, so this can't be an error status
+            lines.put({"error": type(error).__name__})
+
+    threading.Thread(target=work, daemon=True).start()
+    while True:
+        line = lines.get()
+        yield json.dumps(line) + "\n"
+        if "step" not in line:
+            return
 
 
 @mcp.custom_route("/health", methods=["GET"])
@@ -57,6 +79,19 @@ async def explain_route(request):
     if result is None:
         return JSONResponse({"error": "deal has no score yet"}, status_code=409)
     return JSONResponse(result)
+
+
+@mcp.custom_route("/explain/{deal_id}/stream", methods=["POST"])
+async def explain_stream_route(request):
+    deal_id = request.path_params["deal_id"]
+    try:
+        deal = await run_in_threadpool(tools.get_deal, deal_id)
+    except DealNotFound:
+        return JSONResponse({"error": "deal not found"}, status_code=404)
+    if deal["score"] is None:
+        return JSONResponse({"error": "deal has no score yet"}, status_code=409)
+    fresh = request.query_params.get("fresh") == "true"
+    return StreamingResponse(stream_explanation(deal_id, fresh), media_type="application/x-ndjson")
 
 
 @mcp.tool()

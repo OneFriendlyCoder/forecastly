@@ -46,7 +46,7 @@ export function DealPage({ id }: { id: string }) {
       ) : (
         <div className="deal-grid">
           <div className="deal-main">
-            {deal.closed ? null : <Explain key={deal.as_of} id={deal.deal_id} />}
+            {deal.closed ? null : <Explain id={deal.deal_id} asOf={deal.as_of!} />}
             <section className="card">
               <h2>What moved this score</h2>
               <Reasons factors={deal.factors ?? []} />

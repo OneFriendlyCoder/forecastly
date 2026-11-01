@@ -4,6 +4,7 @@ Each deal's own top factors are the expected reasons. Answers are always generat
 """
 import json
 import statistics
+from collections import Counter
 import sys
 import urllib.request
 from pathlib import Path
@@ -74,8 +75,11 @@ def main():
               f"{row['latency_ms']} ms {row['rejected']}", flush=True)
     finished = [row for row in rows if row["answer"]]  # failed requests have no real time or call count
     times = sorted(row["latency_ms"] for row in finished)
+    sections = Counter(row["answer"]["next_step"]["playbook_id"] for row in finished if row["answer"]["next_step"])
     summary = {
         "cases": len(rows),
+        "playbook_sections_used": len(sections),
+        "top_two_sections_share": round(sum(n for _, n in sections.most_common(2)) / max(sum(sections.values()), 1), 3),
         "groundedness": share(rows, "groundedness"),
         "relevance": share(rows, "relevance"),
         "actionability": share(rows, "actionability"),

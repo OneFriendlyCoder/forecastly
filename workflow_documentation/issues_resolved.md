@@ -100,13 +100,50 @@ We replaced the Go `deal-state` service and API with Python, because the project
 | An open explanation could stay beside a newer score | Reviewing what happens when new information arrives | Reset the explanation when the score changes |
 | An API test could pass with no rows at all, because "all rows match" is true of an empty list | Reviewing the rep filter while debugging | Risk filters now check exact counts. The rep and product checks are still weak in this way |
 
+## Agent search, cache and timeouts
+
+| Problem | How it was found | Fix |
+|---|---|---|
+| Playbook search found the right guide for only 4 of 10 known questions. The embedding model needs `input_type` to tell questions from documents, and leaving it out gave no error | Investigating why two sections dominated the advice, then scoring options against questions with known answers | Send `query` or `passage` on every call, which scored 10 of 10. The live test now checks these questions |
+| A late event could change a score and still reuse the old explanation, because saved answers were tied only to the deal's latest event time | Reviewing what happens when new information arrives | Include the score in the saved answer's key. Unit tested, not yet seen live |
+| The dashboard showed "The agent couldn't be reached" for slow answers. nginx gave up at 3 minutes, but the agent can take 5 | Reading the settings while checking if deals can run at the same time. Evaluations missed it because they skip nginx | Raise nginx's limit to 330 seconds. The setting is confirmed live, but the button hasn't been tested on a slow deal |
+| The guard rejected "10", most likely from "the last 10 events", which forced slow retries | Rejections recorded in the 5-deal sample | Allow the events limit as a known number |
+| The live agent test gave up at 300 seconds, the same moment as the agent's own limit | The test timed out with no answer | Wait 360 seconds |
+| One 5-deal sample case failed with a dropped connection | The agent had restarted. Rebuilding the web container during the run restarted it | Caused by our own rebuild, so don't rebuild services during an evaluation |
+
+## Explanation progress
+
+- **Problem:** the reader stared at one loading message for 3 to 5 minutes.
+- **Fix:** the page now shows each agent step live, with a timer. A real run sent steps at 0, 78 and 201 seconds. Word-by-word text was rejected, because the fact check only runs on the finished answer.
+- **Not improved by this alone:** the total wait stayed the same. The move to Claude below fixed that.
+
+## Move to Claude Haiku
+
+- **Problem:** answers took 2 to 5 minutes on the free NVIDIA model.
+- **Fix:** the writer now uses Claude Haiku 5.5 at low effort. A 20-deal sample took 6.4 seconds at p50 and 9.8 at p95. This settles that the wait came from the model or its provider, not our code. NVIDIA stays for playbook search.
+- **Problem:** half of a 10-deal sample needed a rewrite. Most were false alarms, as Claude wrote the score as "0.28" and the guard only knew "0.3" and "28".
+- **Fix:** the guard now accepts the score to two decimal places. The rewrite rate fell to 25% on a 20-deal sample, mostly for cause words, which the guard is right to reject.
+- **Result:** the live agent test passes, including the stream.
+
+## Live demo
+
+- **Problem:** the explanation panel reset whenever a deal's score changed. During a replay, that could wipe an answer moments after it appeared.
+- **Fix:** the answer now stays, with a note that the score has changed and an "Explain again" button.
+- **Problem:** the prompt assumed every deal was at risk. On a 74% deal, the answer said the score "does not read as a low chance of winning". Every test passed, and a rehearsal found it.
+- **Fix:** the prompt now covers healthy and at-risk deals, and asks for a percentage. Two 94% deals then got sensible answers, with no rewrites.
+- **Problem:** the first deal picked to follow had fallen steadily in a fast replay, but zigzagged at demo speed, as paced replays score more often.
+- **Fix:** the deal was picked again from a run at demo speed.
+- **Problem:** my first rehearsal script waited for the replay to finish, so it proved nothing about live behaviour.
+- **Fix:** the replay now runs alongside the script.
+
 ## Open issues
 
 These are known and not fixed yet:
 
 - Three Python consumers ran slower than one, and the 3-consumer and burst load tests didn't finish.
 - A late event can change a score and still reuse the saved explanation.
-- 33 of 43 next steps came from just two playbook sections.
+- Advice may still be repetitive. On a 20-deal sample with Claude, 2 playbook sections made up 75% of answers, using 4 sections in total.
+- The same deal clicked twice runs the whole agent twice.
 
 ## Lessons
 
