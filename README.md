@@ -1,10 +1,38 @@
-# Forecastly
+<div align="center">
 
-Forecastly watches B2B sales activity as it happens, predicts each open deal's chance of winning, and explains the score in plain language with one suggested next step.
+# 📈 Forecastly
 
-It's an independent demo for Outreach AI, not an Outreach product. The code, containers and docs use the working name Pipeline Pulse.
+### See which deals are slipping, and why, as it happens.
 
-**About the data:** deal records come from a public sample dataset, and all deal activity is simulated. The project shows engineering and problem solving. Its results say nothing about predicting real sales.
+Forecastly turns B2B sales activity into a live win chance for every open deal, then explains each score in plain language with one suggested next step.
+
+<br>
+
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)
+![Kafka API](https://img.shields.io/badge/Redpanda-Kafka_API-E2401B?style=flat-square&logo=apachekafka&logoColor=white)
+![Postgres](https://img.shields.io/badge/Postgres-pgvector-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![LightGBM](https://img.shields.io/badge/Model-LightGBM-2E8B57?style=flat-square)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-TypeScript-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Claude](https://img.shields.io/badge/Agent-Claude-D97757?style=flat-square&logo=anthropic&logoColor=white)
+![MCP](https://img.shields.io/badge/MCP-tools-555555?style=flat-square)
+
+[**Run it**](#run-it) · [**Live demo**](#run-the-live-demo) · [**How it works**](#how-it-works) · [**Results**](#results) · [**Docs**](#more-detail)
+
+<br>
+
+<img src="workflow_documentation/images/dashboard.png" alt="Forecastly dashboard during a live replay, with the activity strip, risk cards and a list of open deals" width="900">
+
+<br>
+
+| 439,821 | 0.431 s | 18,000 | ~6 s |
+|:---:|:---:|:---:|:---:|
+| simulated events replayed | p95 from event to score, at 1M events an hour | injected faults, with identical final data | typical fact-checked explanation |
+
+</div>
+
+> [!NOTE]
+> Forecastly is an independent demo for Outreach AI, not an Outreach product. Deal records come from a public sample dataset, and all deal activity is simulated. The project shows engineering and problem solving, and its results say nothing about predicting real sales. The code, containers and docs use the working name Pipeline Pulse.
 
 ## What it does
 
@@ -13,6 +41,10 @@ It's an independent demo for Outreach AI, not an Outreach product. The code, con
 - **Shows the pipeline.** A React dashboard lists open deals by risk, with filters, a score history and a live activity strip.
 - **Explains scores.** An LLM agent reads the deal's events, searches a sales playbook, and writes a summary and next step. A fact check runs before anything is shown.
 - **Survives failure.** Duplicate, late and broken events don't change the final data, and a stopped service catches up by itself.
+
+<p align="center">
+  <img src="workflow_documentation/images/deal.png" alt="A deal page showing a fact-checked AI explanation, what moved the score, and the win chance over time" width="800">
+</p>
 
 ## How it works
 
@@ -235,7 +267,7 @@ These come from one laptop running Docker, on simulated data.
 - **The model learns a pattern we built in.** The simulator's hidden health score is steered by the real outcome, which is why activity predicts results at all.
 - **Three consumers ran slower than one,** and the burst load test hasn't been run.
 - **Agent advice can repeat.** Two playbook sections made up 75% of answers on a 20-deal sample.
-- **The fact check doesn't prove the advice is good.** It checks numbers, citations and cause claims.
+- **The fact check doesn't prove the advice is good.** It checks numbers, citations and cause claims. It can also miss a true number used wrongly: one answer said buyers replied "five times" when 5 was the number of buyers.
 - **Passing the fact check isn't the same as being relevant.** A 12-deal sample after the last prompt change scored 83% on relevance.
 - **Token cost per answer hasn't been measured.**
 - **There's no login.** The dashboard, API and agent can only be reached from this machine, but Postgres (5432) and Kafka (19092) are open to your local network, with a demo password on Postgres. Use a trusted network.

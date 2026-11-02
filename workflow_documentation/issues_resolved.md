@@ -140,6 +140,7 @@ We replaced the Go `deal-state` service and API with Python, because the project
 
 These are known and not fixed yet:
 
+- The fact check can miss a true number used wrongly. One answer said buyers replied "five times" when 5 was the number of buyers, and the deal had 22 replies.
 - Three Python consumers ran slower than one, and the 3-consumer and burst load tests didn't finish.
 - A late event can change a score and still reuse the saved explanation.
 - Advice may still be repetitive. On a 20-deal sample with Claude, 2 playbook sections made up 75% of answers, using 4 sections in total.
